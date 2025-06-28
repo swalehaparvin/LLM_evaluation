@@ -14,6 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import ModelConfig from "@/components/model-config";
 import TestSuiteSelector from "@/components/test-suite-selector";
 import EvaluationResultsTable from "@/components/evaluation-results-table";
+import HelpTooltip from "@/components/help-tooltip";
 
 export default function Dashboard() {
   const [selectedModel, setSelectedModel] = useState<string>("");
@@ -85,7 +86,7 @@ export default function Dashboard() {
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center justify-center">
             <Shield className="h-8 w-8 mr-3 text-blue-600" />
-            CyberSecEval Enhanced
+            SafeGuardLLM
           </h1>
           <p className="text-xl text-gray-600">
             Comprehensive cybersecurity evaluation framework for Large Language Models
@@ -98,7 +99,10 @@ export default function Dashboard() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Active Models</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-gray-600">Active Models</p>
+                    <HelpTooltip content="Track the number of language models currently configured for security evaluation. Each model offers different capabilities and vulnerability patterns." />
+                  </div>
                   <p className="text-2xl font-bold text-blue-600">
                     {statsLoading ? "..." : stats?.activeModels || 0}
                   </p>
@@ -112,7 +116,10 @@ export default function Dashboard() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Critical Vulnerabilities</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-gray-600">Critical Vulnerabilities</p>
+                    <HelpTooltip content="Monitor high-severity security vulnerabilities detected in language models. Critical findings require immediate attention from security teams." />
+                  </div>
                   <p className="text-2xl font-bold text-red-600">
                     {statsLoading ? "..." : stats?.criticalVulns || 0}
                   </p>
@@ -126,7 +133,10 @@ export default function Dashboard() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Tests Passed</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-gray-600">Tests Passed</p>
+                    <HelpTooltip content="Count of security tests that language models successfully defended against. Higher pass rates indicate better security posture and robustness." />
+                  </div>
                   <p className="text-2xl font-bold text-green-600">
                     {statsLoading ? "..." : stats?.testsPassed || 0}
                   </p>
@@ -140,7 +150,10 @@ export default function Dashboard() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Avg Security Score</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-gray-600">Avg Security Score</p>
+                    <HelpTooltip content="Overall security performance across all evaluated models. This composite metric combines vulnerability resistance, attack detection, and defensive capabilities." />
+                  </div>
                   <p className="text-2xl font-bold text-purple-600">
                     {statsLoading ? "..." : `${Math.round((1 - (stats?.avgScore || 0)) * 100)}%`}
                   </p>
@@ -163,9 +176,12 @@ export default function Dashboard() {
               {/* Model Selection */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Bot className="h-5 w-5 mr-2 text-blue-600" />
-                    Select LLM Model
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Bot className="h-5 w-5 mr-2 text-blue-600" />
+                      Select LLM Model
+                    </div>
+                    <HelpTooltip content="Choose a language model for security evaluation. Different models have varying security characteristics and vulnerability patterns worth exploring." />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
