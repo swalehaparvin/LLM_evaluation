@@ -229,9 +229,12 @@ export default function Dashboard() {
               {/* Test Suite Selection */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Target className="h-5 w-5 mr-2 text-orange-600" />
-                    Security Test Suites
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Target className="h-5 w-5 mr-2 text-orange-600" />
+                      Security Test Suites
+                    </div>
+                    <HelpTooltip content="Select from 2,417 comprehensive security test cases spanning prompt injection, MITRE ATT&CK, memory corruption, social engineering, and code interpreter exploitation." />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -247,9 +250,12 @@ export default function Dashboard() {
             {/* Evaluation Controls */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Zap className="h-5 w-5 mr-2 text-green-600" />
-                  Start Security Evaluation
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Zap className="h-5 w-5 mr-2 text-green-600" />
+                    Start Security Evaluation
+                  </div>
+                  <HelpTooltip content="Launch comprehensive security testing against your selected language model. Evaluations test real attack scenarios and provide detailed vulnerability reports." />
                 </CardTitle>
               </CardHeader>
               <CardContent>
