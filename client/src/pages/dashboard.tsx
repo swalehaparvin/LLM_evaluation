@@ -43,12 +43,19 @@ export default function Dashboard() {
     mutationFn: async (data: { modelId: string; testSuiteIds: number[]; configuration: any }) => {
       // Create new evaluation session
       const response = await apiRequest('POST', '/api/evaluations', data);
-      const evaluation = await response.json();
+      const evaluationData = await response.json();
 
-      // Start evaluation process
-      await apiRequest('POST', `/api/evaluations/${evaluation.id}/start`);
+      // Start all created evaluations
+      if (evaluationData.evaluations) {
+        for (const evaluation of evaluationData.evaluations) {
+          await apiRequest('POST', `/api/evaluations/${evaluation.id}/start`);
+        }
+      } else {
+        // Fallback for single evaluation
+        await apiRequest('POST', `/api/evaluations/${evaluationData.id}/start`);
+      }
 
-      return evaluation;
+      return evaluationData;
     },
     onSuccess: () => {
       // Invalidate queries to refresh data

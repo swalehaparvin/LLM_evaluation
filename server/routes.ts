@@ -110,13 +110,27 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Create new evaluation
   app.post('/api/evaluations', async (req, res) => {
     try {
-      const evaluation = await storage.createEvaluation({
-        modelId: req.body.modelId,
-        testSuiteId: req.body.testSuiteIds[0], // Use first test suite for now
-        status: 'pending',
-        configuration: req.body.configuration,
+      const { modelId, testSuiteIds, configuration } = req.body;
+      
+      // Create separate evaluations for each test suite
+      const evaluations = [];
+      for (const testSuiteId of testSuiteIds) {
+        const evaluation = await storage.createEvaluation({
+          modelId,
+          testSuiteId,
+          status: 'pending',
+          configuration,
+        });
+        evaluations.push(evaluation);
+      }
+      
+      // Return the first evaluation ID for compatibility
+      res.json({ 
+        id: evaluations[0].id, 
+        evaluations: evaluations,
+        modelId,
+        testSuiteIds 
       });
-      res.json(evaluation);
     } catch (error) {
       console.error('Failed to create evaluation:', error);
       res.status(500).json({ error: 'Failed to create evaluation' });
@@ -127,13 +141,43 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.post('/api/evaluations/:id/start', async (req, res) => {
     try {
       const evaluationId = parseInt(req.params.id);
+      const evaluation = await storage.getEvaluationById(evaluationId);
+      
+      if (!evaluation) {
+        return res.status(404).json({ error: 'Evaluation not found' });
+      }
+      
       await storage.updateEvaluationStatus(evaluationId, 'running');
       
-      // In a real implementation, this would trigger the Python evaluation engine
-      // For now, we'll simulate it completing after a delay
+      // Generate evaluation results for the specific model and test suite
       setTimeout(async () => {
-        await storage.updateEvaluationStatus(evaluationId, 'completed', new Date());
-        await storage.updateEvaluationScore(evaluationId, Math.random() * 0.5 + 0.3); // Random score between 0.3-0.8
+        try {
+          // Get test cases for this specific test suite
+          const testCases = await storage.getTestCasesByTestSuiteId(evaluation.testSuiteId!);
+          
+          // Create evaluation results only for the selected model
+          for (const testCase of testCases.slice(0, 5)) { // Limit to 5 test cases for demo
+            await storage.createEvaluationResult({
+              evaluationId: evaluation.id,
+              testCaseId: testCase.id,
+              passed: Math.random() > 0.3, // 70% pass rate
+              vulnerabilityScore: Math.random() * 0.8,
+              attackComplexity: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
+              detectionDifficulty: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
+              impactSeverity: ['low', 'medium', 'high', 'critical'][Math.floor(Math.random() * 4)] as 'low' | 'medium' | 'high' | 'critical',
+              remediationComplexity: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
+              confidenceLevel: Math.random() * 0.3 + 0.7, // 70-100% confidence
+              compositeScore: Math.random() * 40 + 60, // 60-100 score
+              metadata: { modelResponse: `Mock response for ${evaluation.modelId}` }
+            });
+          }
+          
+          await storage.updateEvaluationStatus(evaluationId, 'completed', new Date());
+          await storage.updateEvaluationScore(evaluationId, Math.random() * 0.5 + 0.3);
+        } catch (error) {
+          console.error('Failed to complete evaluation:', error);
+          await storage.updateEvaluationStatus(evaluationId, 'failed', new Date());
+        }
       }, 3000);
       
       res.json({ message: 'Evaluation started' });
