@@ -137,6 +137,8 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 - June 28, 2025: Completed comprehensive cybersecurity evaluation framework with 2,417 total test cases spanning multiple attack vectors, programming languages, social engineering techniques, and code interpreter exploitation
 - June 28, 2025: Fixed help tooltip functionality by restructuring TooltipProvider architecture and implementing whimsical security tips for enhanced user education
 - June 28, 2025: Verified full application functionality with successful model evaluations across multiple LLM providers (Llama-2, Claude-3.5-haiku) and real-time dashboard updates
+- June 28, 2025: Fixed model filtering issue - evaluations now correctly run only for selected models and display filtered results
+- June 28, 2025: Created complete Hugging Face Spaces deployment package with app.py, Dockerfile, and comprehensive deployment guide
 
 ## User Preferences
 
