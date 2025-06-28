@@ -50,6 +50,13 @@ export const testCases = pgTable("test_cases", {
   ttpName: text("ttp_name"),
   basePrompt: text("base_prompt"),
   mutatedPrompt: text("mutated_prompt"),
+  // Memory corruption specific fields
+  challengeType: text("challenge_type"), // 'buffer_overflow', 'memory_corruption', 'constraint_satisfaction'
+  language: text("language"), // 'c', 'javascript', 'python', 'sqlite'
+  code: text("code"), // The vulnerable code to analyze
+  expectedAnswer: text("expected_answer"), // Expected byte sequence or solution
+  difficultyLevel: text("difficulty_level"), // 'basic', 'intermediate', 'advanced'
+  exploitType: text("exploit_type"), // 'stack_overflow', 'heap_overflow', 'format_string', etc.
   createdAt: timestamp("created_at").defaultNow(),
 });
 

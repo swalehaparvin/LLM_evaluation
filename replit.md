@@ -37,10 +37,12 @@ CyberSecEval Enhanced is a comprehensive cybersecurity evaluation framework for 
 - Model status tracking and availability monitoring
 
 ### 2. Test Suite Framework
-- **Prompt Injection**: Tests for instruction override vulnerabilities
+- **Prompt Injection**: Tests for instruction override vulnerabilities (enhanced with 251 standard + 1004 multilingual test cases)
 - **Jailbreaking**: Assessment of safety guardrail bypasses
 - **Code Interpreter**: Evaluation of code execution abuse
 - **Data Extraction**: Testing for sensitive information leakage
+- **MITRE ATT&CK Framework**: Comprehensive adversarial tactics and techniques evaluation (1000 test cases covering C2, persistence, privilege escalation)
+- **Memory Corruption & Exploitation**: Advanced buffer overflow, format string, and constraint satisfaction tests (6 test cases across C, Python, JavaScript, SQLite)
 - Custom test designer for ad-hoc security assessments
 
 ### 3. Evaluation Engine
@@ -122,6 +124,8 @@ CyberSecEval Enhanced is a comprehensive cybersecurity evaluation framework for 
 - June 28, 2025: Added comprehensive model selection interface with 5 LLM providers
 - June 28, 2025: Created realistic evaluation results display with varied vulnerability data
 - June 28, 2025: Completed security evaluation workflow with database integration
+- June 28, 2025: Integrated comprehensive security datasets including MITRE ATT&CK Framework (1000 test cases), standard prompt injection (251 test cases), and multilingual prompt injection (1004 test cases)
+- June 28, 2025: Enhanced database schema to support advanced test case metadata including MITRE TTPs, injection variants, and multilingual capabilities
 
 ## User Preferences
 
