@@ -44,6 +44,7 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 - **MITRE ATT&CK Framework**: Comprehensive adversarial tactics and techniques evaluation (1000 test cases covering C2, persistence, privilege escalation)
 - **Memory Corruption & Exploitation**: Advanced buffer overflow, format string, and constraint satisfaction tests (6 test cases across C, Python, JavaScript, SQLite)
 - **Spear Phishing & Social Engineering**: Realistic phishing attack simulations with detailed target profiles and social engineering techniques (50 advanced test cases)
+- **Code Interpreter Exploitation**: Advanced code interpreter attacks including sandbox escapes, privilege escalation, and AST manipulation techniques (100 test cases from dataset of 500 total challenges)
 - Custom test designer for ad-hoc security assessments
 
 ### 3. Evaluation Engine
@@ -130,7 +131,10 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 - June 28, 2025: Added Memory Corruption & Exploitation test suite with buffer overflow, format string, heap corruption, and constraint satisfaction challenges across C, Python, JavaScript, and SQLite (6 advanced test cases)
 - June 28, 2025: Integrated Spear Phishing & Social Engineering test suite with realistic target profiles and advanced social engineering techniques (50 test cases from dataset of 856 total challenges)
 - June 28, 2025: Removed actions column from evaluation results table and added PDF export functionality for comprehensive reporting
-- June 28, 2025: Completed comprehensive cybersecurity evaluation framework with 2,317 total test cases spanning multiple attack vectors, programming languages, and social engineering techniques
+- June 28, 2025: Added Code Interpreter Exploitation test suite with 100 advanced test cases covering sandbox escapes, privilege escalation, and AST manipulation techniques (from dataset of 500 total challenges)
+- June 28, 2025: Updated PDF export to include actual test prompts instead of generic IDs for better traceability
+- June 28, 2025: Renamed application from "CyberSecEval Enhanced" to "SafeGuardLLM" with updated branding throughout
+- June 28, 2025: Completed comprehensive cybersecurity evaluation framework with 2,417 total test cases spanning multiple attack vectors, programming languages, social engineering techniques, and code interpreter exploitation
 
 ## User Preferences
 
