@@ -34,6 +34,8 @@ export async function registerRoutes(app: Express): Promise<void> {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // Root route will be handled by Vite middleware
+
   // Direct database-backed API endpoints
   // (Proxy removed to use database directly)
 
