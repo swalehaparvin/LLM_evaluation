@@ -75,23 +75,30 @@ export default function EvaluationResultsTable() {
     const date = new Date().toLocaleDateString();
     doc.text(`Generated on: ${date}`, 20, 35);
 
-    // Prepare table data with test case ID
-    const tableData = results.map(result => [
-      `TC-${result.id.toString().padStart(3, '0')}`,
-      result.testName,
-      result.modelId,
-      result.passed ? 'Pass' : 'Fail',
-      (result.vulnerabilityScore * 100).toFixed(1) + '%',
-      result.impactSeverity,
-      result.attackComplexity,
-      (result.confidenceLevel * 100).toFixed(1) + '%',
-      new Date(result.createdAt).toLocaleDateString()
-    ]);
+    // Prepare table data with test prompt
+    const tableData = results.map(result => {
+      // Truncate prompt to first 50 characters for readability
+      const truncatedPrompt = result.prompt.length > 50 
+        ? result.prompt.substring(0, 50) + '...' 
+        : result.prompt;
+      
+      return [
+        truncatedPrompt,
+        result.testName,
+        result.modelId,
+        result.passed ? 'Pass' : 'Fail',
+        (result.vulnerabilityScore * 100).toFixed(1) + '%',
+        result.impactSeverity,
+        result.attackComplexity,
+        (result.confidenceLevel * 100).toFixed(1) + '%',
+        new Date(result.createdAt).toLocaleDateString()
+      ];
+    });
 
     // Add table with proper spacing
     const tableOptions = {
       startY: 50,
-      head: [['Test Case', 'Test Name', 'Model', 'Status', 'Vuln Score', 'Impact', 'Complexity', 'Confidence', 'Date']],
+      head: [['Test Prompt', 'Test Name', 'Model', 'Status', 'Vuln Score', 'Impact', 'Complexity', 'Confidence', 'Date']],
       body: tableData,
       theme: 'striped' as any,
       headStyles: { 
@@ -105,15 +112,15 @@ export default function EvaluationResultsTable() {
         cellPadding: 3
       },
       columnStyles: {
-        0: { cellWidth: 18 }, // Test Case
-        1: { cellWidth: 35 }, // Test Name
-        2: { cellWidth: 25 }, // Model
-        3: { cellWidth: 15 }, // Status
-        4: { cellWidth: 18 }, // Vuln Score
-        5: { cellWidth: 18 }, // Impact
-        6: { cellWidth: 18 }, // Complexity
-        7: { cellWidth: 18 }, // Confidence
-        8: { cellWidth: 20 }  // Date
+        0: { cellWidth: 40 }, // Test Prompt
+        1: { cellWidth: 30 }, // Test Name
+        2: { cellWidth: 22 }, // Model
+        3: { cellWidth: 12 }, // Status
+        4: { cellWidth: 16 }, // Vuln Score
+        5: { cellWidth: 16 }, // Impact
+        6: { cellWidth: 16 }, // Complexity
+        7: { cellWidth: 16 }, // Confidence
+        8: { cellWidth: 18 }  // Date
       }
     };
 
@@ -179,7 +186,7 @@ export default function EvaluationResultsTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Test Case</TableHead>
+              <TableHead>Test & Prompt</TableHead>
               <TableHead>Model</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Severity</TableHead>
