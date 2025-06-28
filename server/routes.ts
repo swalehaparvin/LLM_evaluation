@@ -28,18 +28,11 @@ const runCustomTestSchema = z.object({
   }).optional(),
 });
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<void> {
   // Basic health check endpoint
   app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
-
-  // Temporarily disable WebSocket to isolate connection issues
-  // const httpServer = createServer(app);
-  // const wss = new WebSocketServer({ server: httpServer });
-
-  // Return Express app's HTTP server instead
-  const httpServer = createServer(app);
 
   // Models endpoints
   app.get('/api/models', async (req, res) => {
@@ -190,5 +183,4 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  return httpServer;
 }

@@ -38,7 +38,7 @@ app.use((req, res, next) => {
 
 (async () => {
   try {
-    const server = await registerRoutes(app);
+    await registerRoutes(app);
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
@@ -46,6 +46,18 @@ app.use((req, res, next) => {
 
       res.status(status).json({ message });
       throw err;
+    });
+
+    // ALWAYS serve the app on port 5000
+    // this serves both the API and the client.
+    // It is the only port that is not firewalled.
+    const port = 5000;
+    const server = app.listen(port, "0.0.0.0", () => {
+      log(`serving on port ${port}`);
+    });
+
+    server.on('error', (error) => {
+      console.error('Server error:', error);
     });
 
     // importantly only setup vite in development and after
@@ -56,18 +68,6 @@ app.use((req, res, next) => {
     } else {
       serveStatic(app);
     }
-
-    // ALWAYS serve the app on port 5000
-    // this serves both the API and the client.
-    // It is the only port that is not firewalled.
-    const port = 5000;
-    server.listen(port, "0.0.0.0", () => {
-      log(`serving on port ${port}`);
-    });
-
-    server.on('error', (error) => {
-      console.error('Server error:', error);
-    });
     
   } catch (error) {
     console.error('Failed to start server:', error);
