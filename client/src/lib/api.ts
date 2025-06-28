@@ -83,14 +83,11 @@ export interface RunCustomTestRequest {
   };
 }
 
-// Python backend API base URL
-const PYTHON_API_BASE = 'http://localhost:8000';
-
-// API functions
+// API functions using the Node.js proxy to Python backend
 export const api = {
   // Dashboard
   getStats: async (): Promise<DashboardStats> => {
-    const res = await fetch(`${PYTHON_API_BASE}/api/stats`);
+    const res = await fetch('/api/stats');
     const data = await res.json();
     return {
       activeModels: data.models_tested || 0,
@@ -102,7 +99,7 @@ export const api = {
 
   // Models
   getModels: async (): Promise<LlmModel[]> => {
-    const res = await fetch(`${PYTHON_API_BASE}/api/models`);
+    const res = await fetch('/api/models');
     const models = await res.json();
     return models.map((model: any, index: number) => ({
       id: index + 1,
@@ -115,7 +112,7 @@ export const api = {
   },
 
   getModel: async (modelId: string): Promise<LlmModel> => {
-    const res = await fetch(`${PYTHON_API_BASE}/api/models`);
+    const res = await fetch('/api/models');
     const models = await res.json();
     const model = models.find((m: any) => m.id === modelId);
     if (!model) throw new Error('Model not found');
@@ -131,7 +128,7 @@ export const api = {
 
   // Test Suites
   getTestSuites: async (): Promise<TestSuite[]> => {
-    const res = await fetch(`${PYTHON_API_BASE}/api/test-suites`);
+    const res = await fetch('/api/test-suites');
     const suites = await res.json();
     return Object.entries(suites).map(([key, value]: [string, any], index) => ({
       id: index + 1,
@@ -145,14 +142,14 @@ export const api = {
 
   getTestCases: async (testSuiteId: number): Promise<TestCase[]> => {
     // Map testSuiteId back to suite name
-    const suitesRes = await fetch(`${PYTHON_API_BASE}/api/test-suites`);
+    const suitesRes = await fetch('/api/test-suites');
     const suites = await suitesRes.json();
     const suiteEntries = Object.entries(suites);
     const suiteKey = suiteEntries[testSuiteId - 1]?.[0];
     
     if (!suiteKey) return [];
     
-    const res = await fetch(`${PYTHON_API_BASE}/api/test-suites/${suiteKey}/test-cases`);
+    const res = await fetch(`/api/test-suites/${suiteKey}/test-cases`);
     const testCases = await res.json();
     return testCases.map((tc: any, index: number) => ({
       id: index + 1,

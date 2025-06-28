@@ -34,6 +34,28 @@ export async function registerRoutes(app: Express): Promise<void> {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // Proxy API requests to Python backend
+  app.use('/api', async (req, res, next) => {
+    try {
+      const pythonBackendUrl = `http://localhost:8000${req.url}`;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+
+      const response = await fetch(pythonBackendUrl, {
+        method: req.method,
+        headers,
+        body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined
+      });
+      
+      const data = await response.json();
+      res.status(response.status).json(data);
+    } catch (error) {
+      console.error('Proxy error:', error);
+      res.status(500).json({ error: 'Python backend unavailable' });
+    }
+  });
+
   // Models endpoints
   app.get('/api/models', async (req, res) => {
     try {

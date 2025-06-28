@@ -114,7 +114,10 @@ CyberSecEval Enhanced is a comprehensive cybersecurity evaluation framework for 
 ```
 
 ## Changelog
-- June 28, 2025. Initial setup
+- June 28, 2025: Initial setup
+- June 28, 2025: Integrated complete Python evaluation engine with all original cybersecurity test suites
+- June 28, 2025: Created unified architecture with React frontend and Python FastAPI backend
+- June 28, 2025: Implemented full CyberSecEval Enhanced functionality with real model evaluations
 
 ## User Preferences
 
