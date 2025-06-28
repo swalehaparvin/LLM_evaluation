@@ -107,6 +107,42 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // Create new evaluation
+  app.post('/api/evaluations', async (req, res) => {
+    try {
+      const evaluation = await storage.createEvaluation({
+        modelId: req.body.modelId,
+        testSuiteId: req.body.testSuiteIds[0], // Use first test suite for now
+        status: 'pending',
+        configuration: req.body.configuration,
+      });
+      res.json(evaluation);
+    } catch (error) {
+      console.error('Failed to create evaluation:', error);
+      res.status(500).json({ error: 'Failed to create evaluation' });
+    }
+  });
+
+  // Start evaluation process
+  app.post('/api/evaluations/:id/start', async (req, res) => {
+    try {
+      const evaluationId = parseInt(req.params.id);
+      await storage.updateEvaluationStatus(evaluationId, 'running');
+      
+      // In a real implementation, this would trigger the Python evaluation engine
+      // For now, we'll simulate it completing after a delay
+      setTimeout(async () => {
+        await storage.updateEvaluationStatus(evaluationId, 'completed', new Date());
+        await storage.updateEvaluationScore(evaluationId, Math.random() * 0.5 + 0.3); // Random score between 0.3-0.8
+      }, 3000);
+      
+      res.json({ message: 'Evaluation started' });
+    } catch (error) {
+      console.error('Failed to start evaluation:', error);
+      res.status(500).json({ error: 'Failed to start evaluation' });
+    }
+  });
+
   // Evaluations endpoints - temporarily disabled
   app.post('/api/evaluations', async (req, res) => {
     try {

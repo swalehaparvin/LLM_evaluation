@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Shield, Bot, AlertTriangle, CheckCircle, XCircle, Activity, Target, Zap } from "lucide-react";
 import { api, type LlmModel, type TestSuite, type DashboardStats } from "@/lib/api";
+import { apiRequest } from "@/lib/queryClient";
 import ModelConfig from "@/components/model-config";
 import TestSuiteSelector from "@/components/test-suite-selector";
 import EvaluationResultsTable from "@/components/evaluation-results-table";
@@ -22,6 +23,7 @@ export default function Dashboard() {
     maxTokens: 1000,
   });
   const [isRunning, setIsRunning] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: models, isLoading: modelsLoading } = useQuery<LlmModel[]>({
     queryKey: ['/api/models'],
@@ -43,12 +45,32 @@ export default function Dashboard() {
 
     setIsRunning(true);
     try {
-      // Here you would integrate with the evaluation API
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate evaluation
-      alert("Evaluation completed! Check the results section.");
+      // Create new evaluation session
+      const evaluation = await apiRequest('/api/evaluations', {
+        method: 'POST',
+        body: JSON.stringify({
+          modelId: selectedModel,
+          testSuiteIds: selectedTestSuites,
+          configuration: {
+            temperature: config.temperature,
+            maxTokens: config.maxTokens,
+          }
+        }),
+      });
+
+      // Start evaluation process
+      await apiRequest(`/api/evaluations/${evaluation.id}/start`, {
+        method: 'POST',
+      });
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/evaluation-results'] });
+      
+      alert("Evaluation started! Results will appear in the Results & Analytics tab.");
     } catch (error) {
       console.error("Evaluation failed:", error);
-      alert("Evaluation failed. Please try again.");
+      alert("Evaluation failed. Please check your API keys and try again.");
     } finally {
       setIsRunning(false);
     }
