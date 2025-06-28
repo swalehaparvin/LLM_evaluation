@@ -185,11 +185,14 @@ export class MemStorage implements IStorage {
 
   async createModel(insertModel: InsertLlmModel): Promise<LlmModel> {
     const id = this.currentLlmModelId++;
-    const model: LlmModel = { 
-      ...insertModel, 
-      id, 
-      createdAt: new Date(),
-      isActive: insertModel.isActive ?? true 
+    const model: LlmModel = {
+      id,
+      name: insertModel.name,
+      modelId: insertModel.modelId,
+      provider: insertModel.provider,
+      description: insertModel.description ?? null,
+      isActive: insertModel.isActive ?? true,
+      createdAt: new Date()
     };
     this.llmModels.set(id, model);
     return model;
@@ -217,11 +220,14 @@ export class MemStorage implements IStorage {
 
   async createTestSuite(insertTestSuite: InsertTestSuite): Promise<TestSuite> {
     const id = this.currentTestSuiteId++;
-    const testSuite: TestSuite = { 
-      ...insertTestSuite, 
-      id, 
-      createdAt: new Date(),
-      isActive: insertTestSuite.isActive ?? true 
+    const testSuite: TestSuite = {
+      id,
+      name: insertTestSuite.name,
+      description: insertTestSuite.description ?? null,
+      category: insertTestSuite.category,
+      severity: insertTestSuite.severity,
+      isActive: insertTestSuite.isActive ?? true,
+      createdAt: new Date()
     };
     this.testSuites.set(id, testSuite);
     return testSuite;
@@ -238,10 +244,17 @@ export class MemStorage implements IStorage {
 
   async createTestCase(insertTestCase: InsertTestCase): Promise<TestCase> {
     const id = this.currentTestCaseId++;
-    const testCase: TestCase = { 
-      ...insertTestCase, 
-      id, 
-      createdAt: new Date() 
+    const testCase: TestCase = {
+      id,
+      name: insertTestCase.name,
+      description: insertTestCase.description ?? null,
+      testSuiteId: insertTestCase.testSuiteId ?? null,
+      testId: insertTestCase.testId,
+      prompt: insertTestCase.prompt,
+      systemPrompt: insertTestCase.systemPrompt ?? null,
+      evaluationCriteria: insertTestCase.evaluationCriteria ?? null,
+      expectedOutcome: insertTestCase.expectedOutcome ?? null,
+      createdAt: new Date()
     };
     this.testCases.set(id, testCase);
     return testCase;
@@ -250,12 +263,15 @@ export class MemStorage implements IStorage {
   // Evaluation operations
   async createEvaluation(insertEvaluation: InsertEvaluation): Promise<Evaluation> {
     const id = this.currentEvaluationId++;
-    const evaluation: Evaluation = { 
-      ...insertEvaluation, 
-      id, 
+    const evaluation: Evaluation = {
+      id,
+      status: insertEvaluation.status,
+      modelId: insertEvaluation.modelId,
+      testSuiteId: insertEvaluation.testSuiteId ?? null,
+      overallScore: insertEvaluation.overallScore ?? null,
       startedAt: new Date(),
       completedAt: null,
-      overallScore: null
+      configuration: insertEvaluation.configuration ?? null
     };
     this.evaluations.set(id, evaluation);
     return evaluation;
@@ -266,7 +282,7 @@ export class MemStorage implements IStorage {
   }
 
   async getEvaluationsByModelId(modelId: string): Promise<Evaluation[]> {
-    return Array.from(this.evaluations.values()).filter(eval => eval.modelId === modelId);
+    return Array.from(this.evaluations.values()).filter(evaluation => evaluation.modelId === modelId);
   }
 
   async updateEvaluationStatus(id: number, status: string, completedAt?: Date): Promise<void> {
@@ -290,10 +306,21 @@ export class MemStorage implements IStorage {
   // Evaluation Result operations
   async createEvaluationResult(insertResult: InsertEvaluationResult): Promise<EvaluationResult> {
     const id = this.currentResultId++;
-    const result: EvaluationResult = { 
-      ...insertResult, 
-      id, 
-      createdAt: new Date() 
+    const result: EvaluationResult = {
+      id,
+      evaluationId: insertResult.evaluationId ?? null,
+      testCaseId: insertResult.testCaseId ?? null,
+      modelResponse: insertResult.modelResponse ?? null,
+      passed: insertResult.passed ?? null,
+      vulnerabilityScore: insertResult.vulnerabilityScore ?? null,
+      attackComplexity: insertResult.attackComplexity ?? null,
+      detectionDifficulty: insertResult.detectionDifficulty ?? null,
+      impactSeverity: insertResult.impactSeverity ?? null,
+      remediationComplexity: insertResult.remediationComplexity ?? null,
+      confidenceLevel: insertResult.confidenceLevel ?? null,
+      compositeScore: insertResult.compositeScore ?? null,
+      metadata: insertResult.metadata ?? null,
+      createdAt: new Date()
     };
     this.evaluationResults.set(id, result);
     return result;
@@ -305,7 +332,11 @@ export class MemStorage implements IStorage {
 
   async getRecentEvaluationResults(limit: number = 10): Promise<EvaluationResult[]> {
     return Array.from(this.evaluationResults.values())
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .sort((a, b) => {
+        const aTime = a.createdAt?.getTime() ?? 0;
+        const bTime = b.createdAt?.getTime() ?? 0;
+        return bTime - aTime;
+      })
       .slice(0, limit);
   }
 }
