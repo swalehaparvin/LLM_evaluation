@@ -30,17 +30,15 @@ export default function HelpTooltip({ content, className = "" }: HelpTooltipProp
   const enhancedContent = `${content}\n\n${randomTip}`;
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <HelpCircle className={`h-4 w-4 text-gray-400 hover:text-blue-500 cursor-help transition-colors ${className}`} />
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs p-3 bg-white dark:bg-gray-800 border shadow-lg">
-          <div className="whitespace-pre-line text-sm">
-            {enhancedContent}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <HelpCircle className={`h-4 w-4 text-gray-400 hover:text-blue-500 cursor-help transition-colors ${className}`} />
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs p-3 bg-white dark:bg-gray-800 border shadow-lg z-50">
+        <div className="whitespace-pre-line text-sm">
+          {enhancedContent}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   );
 }

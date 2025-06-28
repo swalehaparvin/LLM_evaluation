@@ -15,6 +15,7 @@ import ModelConfig from "@/components/model-config";
 import TestSuiteSelector from "@/components/test-suite-selector";
 import EvaluationResultsTable from "@/components/evaluation-results-table";
 import HelpTooltip from "@/components/help-tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default function Dashboard() {
   const [selectedModel, setSelectedModel] = useState<string>("");
@@ -80,8 +81,9 @@ export default function Dashboard() {
   const selectedModelData = models?.find(m => m.modelId === selectedModel);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <TooltipProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center justify-center">
@@ -415,7 +417,8 @@ export default function Dashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }
