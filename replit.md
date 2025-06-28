@@ -1,8 +1,8 @@
-# CyberSecEval Enhanced
+# SafeGuardLLM
 
 ## Overview
 
-CyberSecEval Enhanced is a comprehensive cybersecurity evaluation framework for Large Language Models (LLMs). The application provides advanced testing capabilities to assess LLM vulnerabilities across multiple security dimensions including prompt injection, jailbreaking, code interpreter abuse, and data extraction attacks. Built as a full-stack web application with real-time evaluation capabilities and professional security-focused UI.
+SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity evaluation framework for Large Language Models (LLMs). The application provides advanced testing capabilities to assess LLM vulnerabilities across multiple security dimensions including prompt injection, jailbreaking, code interpreter abuse, and data extraction attacks. Built as a full-stack web application with real-time evaluation capabilities and professional security-focused UI.
 
 ## System Architecture
 

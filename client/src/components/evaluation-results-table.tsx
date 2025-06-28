@@ -68,15 +68,16 @@ export default function EvaluationResultsTable() {
     
     // Add title
     doc.setFontSize(20);
-    doc.text('CyberSecEval Enhanced - Evaluation Results', 20, 20);
+    doc.text('SafeGuardLLM - Security Evaluation Report', 20, 20);
     
     // Add generation date
     doc.setFontSize(12);
     const date = new Date().toLocaleDateString();
     doc.text(`Generated on: ${date}`, 20, 35);
 
-    // Prepare table data
+    // Prepare table data with test case ID
     const tableData = results.map(result => [
+      `TC-${result.id.toString().padStart(3, '0')}`,
       result.testName,
       result.modelId,
       result.passed ? 'Pass' : 'Fail',
@@ -87,40 +88,66 @@ export default function EvaluationResultsTable() {
       new Date(result.createdAt).toLocaleDateString()
     ]);
 
-    // Add table
-    autoTable(doc, {
+    // Add table with proper spacing
+    const tableOptions = {
       startY: 50,
-      head: [['Test Name', 'Model', 'Status', 'Vuln Score', 'Impact', 'Complexity', 'Confidence', 'Date']],
+      head: [['Test Case', 'Test Name', 'Model', 'Status', 'Vuln Score', 'Impact', 'Complexity', 'Confidence', 'Date']],
       body: tableData,
-      theme: 'striped',
-      headStyles: { fillColor: [71, 85, 105] },
-      styles: { fontSize: 8 },
+      theme: 'striped' as any,
+      headStyles: { 
+        fillColor: [71, 85, 105],
+        textColor: [255, 255, 255],
+        fontSize: 9,
+        fontStyle: 'bold' as any
+      },
+      styles: { 
+        fontSize: 8,
+        cellPadding: 3
+      },
       columnStyles: {
-        0: { cellWidth: 35 },
-        1: { cellWidth: 25 },
-        2: { cellWidth: 15 },
-        3: { cellWidth: 20 },
-        4: { cellWidth: 20 },
-        5: { cellWidth: 20 },
-        6: { cellWidth: 20 },
-        7: { cellWidth: 20 }
+        0: { cellWidth: 18 }, // Test Case
+        1: { cellWidth: 35 }, // Test Name
+        2: { cellWidth: 25 }, // Model
+        3: { cellWidth: 15 }, // Status
+        4: { cellWidth: 18 }, // Vuln Score
+        5: { cellWidth: 18 }, // Impact
+        6: { cellWidth: 18 }, // Complexity
+        7: { cellWidth: 18 }, // Confidence
+        8: { cellWidth: 20 }  // Date
       }
-    });
+    };
 
-    // Add summary
+    (autoTable as any)(doc, tableOptions);
+
+    // Calculate position after table ends
+    const finalY = (doc as any).lastAutoTable?.finalY || 150;
+    
+    // Add summary with proper spacing
     const passedCount = results.filter(r => r.passed).length;
     const avgVulnScore = (results.reduce((sum, r) => sum + r.vulnerabilityScore, 0) / results.length * 100).toFixed(1);
     
-    doc.setFontSize(14);
-    doc.text('Summary:', 20, 200);
-    doc.setFontSize(12);
-    doc.text(`Total Tests: ${results.length}`, 20, 220);
-    doc.text(`Passed: ${passedCount} (${(passedCount/results.length*100).toFixed(1)}%)`, 20, 235);
-    doc.text(`Failed: ${results.length - passedCount} (${((results.length - passedCount)/results.length*100).toFixed(1)}%)`, 20, 250);
-    doc.text(`Average Vulnerability Score: ${avgVulnScore}%`, 20, 265);
+    // Add new page if needed
+    if (finalY > 220) {
+      doc.addPage();
+      doc.setFontSize(16);
+      doc.text('Evaluation Summary', 20, 30);
+      doc.setFontSize(12);
+      doc.text(`Total Tests: ${results.length}`, 20, 50);
+      doc.text(`Passed: ${passedCount} (${(passedCount/results.length*100).toFixed(1)}%)`, 20, 65);
+      doc.text(`Failed: ${results.length - passedCount} (${((results.length - passedCount)/results.length*100).toFixed(1)}%)`, 20, 80);
+      doc.text(`Average Vulnerability Score: ${avgVulnScore}%`, 20, 95);
+    } else {
+      doc.setFontSize(16);
+      doc.text('Evaluation Summary', 20, finalY + 20);
+      doc.setFontSize(12);
+      doc.text(`Total Tests: ${results.length}`, 20, finalY + 40);
+      doc.text(`Passed: ${passedCount} (${(passedCount/results.length*100).toFixed(1)}%)`, 20, finalY + 55);
+      doc.text(`Failed: ${results.length - passedCount} (${((results.length - passedCount)/results.length*100).toFixed(1)}%)`, 20, finalY + 70);
+      doc.text(`Average Vulnerability Score: ${avgVulnScore}%`, 20, finalY + 85);
+    }
 
     // Save the PDF
-    doc.save(`CyberSecEval_Results_${date.replace(/\//g, '-')}.pdf`);
+    doc.save(`SafeGuardLLM_Report_${date.replace(/\//g, '-')}.pdf`);
   };
 
   if (isLoading) {
