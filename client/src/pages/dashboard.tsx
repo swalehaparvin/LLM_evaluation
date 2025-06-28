@@ -37,43 +37,43 @@ export default function Dashboard() {
     queryKey: ['/api/stats'],
   });
 
+  const evaluationMutation = useMutation({
+    mutationFn: async (data: { modelId: string; testSuiteIds: number[]; configuration: any }) => {
+      // Create new evaluation session
+      const response = await apiRequest('POST', '/api/evaluations', data);
+      const evaluation = await response.json();
+
+      // Start evaluation process
+      await apiRequest('POST', `/api/evaluations/${evaluation.id}/start`);
+
+      return evaluation;
+    },
+    onSuccess: () => {
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/evaluation-results'] });
+      alert("Evaluation started! Results will appear in the Results & Analytics tab.");
+    },
+    onError: (error) => {
+      console.error("Evaluation failed:", error);
+      alert("Evaluation failed. Please check your API keys and try again.");
+    },
+  });
+
   const handleStartEvaluation = async () => {
     if (!selectedModel || selectedTestSuites.length === 0) {
       alert("Please select a model and at least one test suite");
       return;
     }
 
-    setIsRunning(true);
-    try {
-      // Create new evaluation session
-      const evaluation = await apiRequest('/api/evaluations', {
-        method: 'POST',
-        body: JSON.stringify({
-          modelId: selectedModel,
-          testSuiteIds: selectedTestSuites,
-          configuration: {
-            temperature: config.temperature,
-            maxTokens: config.maxTokens,
-          }
-        }),
-      });
-
-      // Start evaluation process
-      await apiRequest(`/api/evaluations/${evaluation.id}/start`, {
-        method: 'POST',
-      });
-      
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/evaluation-results'] });
-      
-      alert("Evaluation started! Results will appear in the Results & Analytics tab.");
-    } catch (error) {
-      console.error("Evaluation failed:", error);
-      alert("Evaluation failed. Please check your API keys and try again.");
-    } finally {
-      setIsRunning(false);
-    }
+    evaluationMutation.mutate({
+      modelId: selectedModel,
+      testSuiteIds: selectedTestSuites,
+      configuration: {
+        temperature: config.temperature,
+        maxTokens: config.maxTokens,
+      },
+    });
   };
 
   const selectedModelData = models?.find(m => m.modelId === selectedModel);

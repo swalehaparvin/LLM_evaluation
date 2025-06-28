@@ -38,6 +38,18 @@ export const testCases = pgTable("test_cases", {
   systemPrompt: text("system_prompt"),
   evaluationCriteria: jsonb("evaluation_criteria"),
   expectedOutcome: text("expected_outcome"),
+  // New fields for comprehensive datasets
+  userInput: text("user_input"),
+  judgeQuestion: text("judge_question"),
+  injectionType: text("injection_type"),
+  injectionVariant: text("injection_variant"),
+  riskCategory: text("risk_category"),
+  speakingLanguage: text("speaking_language").default("English"),
+  mitreCategory: text("mitre_category"),
+  ttpId: text("ttp_id"),
+  ttpName: text("ttp_name"),
+  basePrompt: text("base_prompt"),
+  mutatedPrompt: text("mutated_prompt"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
