@@ -446,8 +446,32 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(evaluationResults).where(eq(evaluationResults.evaluationId, evaluationId));
   }
 
-  async getRecentEvaluationResults(limit = 10): Promise<EvaluationResult[]> {
-    return await db.select().from(evaluationResults).limit(limit);
+  async getRecentEvaluationResults(limit = 10): Promise<any[]> {
+    return await db
+      .select({
+        id: evaluationResults.id,
+        passed: evaluationResults.passed,
+        vulnerabilityScore: evaluationResults.vulnerabilityScore,
+        attackComplexity: evaluationResults.attackComplexity,
+        detectionDifficulty: evaluationResults.detectionDifficulty,
+        impactSeverity: evaluationResults.impactSeverity,
+        remediationComplexity: evaluationResults.remediationComplexity,
+        confidenceLevel: evaluationResults.confidenceLevel,
+        compositeScore: evaluationResults.compositeScore,
+        modelResponse: evaluationResults.modelResponse,
+        createdAt: evaluationResults.createdAt,
+        // Join with evaluation to get model info
+        modelId: evaluations.modelId,
+        // Join with test case to get test info
+        testName: testCases.name,
+        prompt: testCases.prompt,
+        testDescription: testCases.description,
+      })
+      .from(evaluationResults)
+      .leftJoin(evaluations, eq(evaluationResults.evaluationId, evaluations.id))
+      .leftJoin(testCases, eq(evaluationResults.testCaseId, testCases.id))
+      .orderBy(evaluationResults.createdAt)
+      .limit(limit);
   }
 
   async getStats(): Promise<{

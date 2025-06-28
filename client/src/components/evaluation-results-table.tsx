@@ -11,7 +11,26 @@ import {
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ExternalLink, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
-import { api, type EvaluationResult } from "@/lib/api";
+import { api } from "@/lib/api";
+
+// Extended result type with joined data
+interface DetailedEvaluationResult {
+  id: number;
+  passed: boolean;
+  vulnerabilityScore: number;
+  attackComplexity: string;
+  detectionDifficulty: string;
+  impactSeverity: string;
+  remediationComplexity: string;
+  confidenceLevel: number;
+  compositeScore: number;
+  modelResponse: string;
+  createdAt: string;
+  modelId: string;
+  testName: string;
+  prompt: string;
+  testDescription: string;
+}
 
 const getSeverityColor = (severity: string) => {
   switch (severity?.toLowerCase()) {
@@ -35,7 +54,7 @@ const getSeverityIcon = (severity: string, passed: boolean) => {
 };
 
 export default function EvaluationResultsTable() {
-  const { data: results, isLoading } = useQuery<EvaluationResult[]>({
+  const { data: results, isLoading } = useQuery<DetailedEvaluationResult[]>({
     queryKey: ['/api/evaluation-results'],
   });
 
@@ -83,7 +102,7 @@ export default function EvaluationResultsTable() {
               <TableCell>
                 <div className="text-sm">
                   <div>{result.modelId}</div>
-                  <div className="text-gray-500">{result.category}</div>
+                  <div className="text-gray-500">{result.testDescription}</div>
                 </div>
               </TableCell>
               <TableCell>
