@@ -96,6 +96,17 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // Evaluation results endpoint
+  app.get('/api/evaluation-results', async (req, res) => {
+    try {
+      const results = await storage.getRecentEvaluationResults(20);
+      res.json(results);
+    } catch (error) {
+      console.error('Failed to fetch evaluation results:', error);
+      res.status(500).json({ error: 'Failed to fetch evaluation results' });
+    }
+  });
+
   // Evaluations endpoints - temporarily disabled
   app.post('/api/evaluations', async (req, res) => {
     try {
