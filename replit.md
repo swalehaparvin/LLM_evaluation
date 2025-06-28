@@ -43,6 +43,7 @@ CyberSecEval Enhanced is a comprehensive cybersecurity evaluation framework for 
 - **Data Extraction**: Testing for sensitive information leakage
 - **MITRE ATT&CK Framework**: Comprehensive adversarial tactics and techniques evaluation (1000 test cases covering C2, persistence, privilege escalation)
 - **Memory Corruption & Exploitation**: Advanced buffer overflow, format string, and constraint satisfaction tests (6 test cases across C, Python, JavaScript, SQLite)
+- **Spear Phishing & Social Engineering**: Realistic phishing attack simulations with detailed target profiles and social engineering techniques (50 advanced test cases)
 - Custom test designer for ad-hoc security assessments
 
 ### 3. Evaluation Engine
@@ -127,7 +128,9 @@ CyberSecEval Enhanced is a comprehensive cybersecurity evaluation framework for 
 - June 28, 2025: Integrated comprehensive security datasets including MITRE ATT&CK Framework (1000 test cases), standard prompt injection (251 test cases), and multilingual prompt injection (1004 test cases)
 - June 28, 2025: Enhanced database schema to support advanced test case metadata including MITRE TTPs, injection variants, and multilingual capabilities
 - June 28, 2025: Added Memory Corruption & Exploitation test suite with buffer overflow, format string, heap corruption, and constraint satisfaction challenges across C, Python, JavaScript, and SQLite (6 advanced test cases)
-- June 28, 2025: Completed comprehensive cybersecurity evaluation framework with 2,261 total test cases spanning multiple attack vectors and programming languages
+- June 28, 2025: Integrated Spear Phishing & Social Engineering test suite with realistic target profiles and advanced social engineering techniques (50 test cases from dataset of 856 total challenges)
+- June 28, 2025: Removed actions column from evaluation results table and added PDF export functionality for comprehensive reporting
+- June 28, 2025: Completed comprehensive cybersecurity evaluation framework with 2,317 total test cases spanning multiple attack vectors, programming languages, and social engineering techniques
 
 ## User Preferences
 
