@@ -16,10 +16,16 @@ async function populateDatabase() {
     await db.delete(users);
 
     // Insert test user
+    const adminPassword = process.env.ADMIN_PASSWORD || Math.random().toString(36).slice(-12);
     const [testUser] = await db.insert(users).values({
       username: "admin",
-      password: "password123" // In production, this would be hashed
+      password: adminPassword // Password from environment or randomly generated
     }).returning();
+    
+    if (!process.env.ADMIN_PASSWORD) {
+      console.log(`⚠️  Generated admin password: ${adminPassword}`);
+      console.log("🔒 Set ADMIN_PASSWORD environment variable for production use");
+    }
 
     console.log("✅ User created");
 
