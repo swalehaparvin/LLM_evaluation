@@ -83,34 +83,88 @@ export interface RunCustomTestRequest {
   };
 }
 
+// Python backend API base URL
+const PYTHON_API_BASE = 'http://localhost:8000';
+
 // API functions
 export const api = {
   // Dashboard
   getStats: async (): Promise<DashboardStats> => {
-    const res = await apiRequest('GET', '/api/stats');
-    return res.json();
+    const res = await fetch(`${PYTHON_API_BASE}/api/stats`);
+    const data = await res.json();
+    return {
+      activeModels: data.models_tested || 0,
+      criticalVulns: data.vulnerabilities_found || 0,
+      testsPassed: data.total_evaluations - data.vulnerabilities_found || 0,
+      avgScore: data.average_vulnerability_score || 0
+    };
   },
 
   // Models
   getModels: async (): Promise<LlmModel[]> => {
-    const res = await apiRequest('GET', '/api/models');
-    return res.json();
+    const res = await fetch(`${PYTHON_API_BASE}/api/models`);
+    const models = await res.json();
+    return models.map((model: any, index: number) => ({
+      id: index + 1,
+      modelId: model.id,
+      provider: model.provider,
+      name: model.name,
+      description: model.description,
+      isActive: true
+    }));
   },
 
   getModel: async (modelId: string): Promise<LlmModel> => {
-    const res = await apiRequest('GET', `/api/models/${modelId}`);
-    return res.json();
+    const res = await fetch(`${PYTHON_API_BASE}/api/models`);
+    const models = await res.json();
+    const model = models.find((m: any) => m.id === modelId);
+    if (!model) throw new Error('Model not found');
+    return {
+      id: 1,
+      modelId: model.id,
+      provider: model.provider,
+      name: model.name,
+      description: model.description,
+      isActive: true
+    };
   },
 
   // Test Suites
   getTestSuites: async (): Promise<TestSuite[]> => {
-    const res = await apiRequest('GET', '/api/test-suites');
-    return res.json();
+    const res = await fetch(`${PYTHON_API_BASE}/api/test-suites`);
+    const suites = await res.json();
+    return Object.entries(suites).map(([key, value]: [string, any], index) => ({
+      id: index + 1,
+      name: value.name,
+      description: value.description,
+      category: key,
+      severity: key === 'jailbreaking' ? 'critical' : 'high',
+      isActive: true
+    }));
   },
 
   getTestCases: async (testSuiteId: number): Promise<TestCase[]> => {
-    const res = await apiRequest('GET', `/api/test-suites/${testSuiteId}/test-cases`);
-    return res.json();
+    // Map testSuiteId back to suite name
+    const suitesRes = await fetch(`${PYTHON_API_BASE}/api/test-suites`);
+    const suites = await suitesRes.json();
+    const suiteEntries = Object.entries(suites);
+    const suiteKey = suiteEntries[testSuiteId - 1]?.[0];
+    
+    if (!suiteKey) return [];
+    
+    const res = await fetch(`${PYTHON_API_BASE}/api/test-suites/${suiteKey}/test-cases`);
+    const testCases = await res.json();
+    return testCases.map((tc: any, index: number) => ({
+      id: index + 1,
+      testSuiteId,
+      testId: tc.id,
+      name: tc.name,
+      description: tc.expected_behavior,
+      prompt: tc.prompt,
+      systemPrompt: '',
+      evaluationCriteria: {},
+      expectedOutcome: tc.expected_behavior
+    }));
   },
 
   // Evaluations
