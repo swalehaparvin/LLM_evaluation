@@ -126,6 +126,8 @@ CyberSecEval Enhanced is a comprehensive cybersecurity evaluation framework for 
 - June 28, 2025: Completed security evaluation workflow with database integration
 - June 28, 2025: Integrated comprehensive security datasets including MITRE ATT&CK Framework (1000 test cases), standard prompt injection (251 test cases), and multilingual prompt injection (1004 test cases)
 - June 28, 2025: Enhanced database schema to support advanced test case metadata including MITRE TTPs, injection variants, and multilingual capabilities
+- June 28, 2025: Added Memory Corruption & Exploitation test suite with buffer overflow, format string, heap corruption, and constraint satisfaction challenges across C, Python, JavaScript, and SQLite (6 advanced test cases)
+- June 28, 2025: Completed comprehensive cybersecurity evaluation framework with 2,261 total test cases spanning multiple attack vectors and programming languages
 
 ## User Preferences
 
