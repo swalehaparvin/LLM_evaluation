@@ -34,27 +34,8 @@ export async function registerRoutes(app: Express): Promise<void> {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
-  // Proxy API requests to Python backend
-  app.use('/api', async (req, res, next) => {
-    try {
-      const pythonBackendUrl = `http://localhost:8000${req.url}`;
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
-
-      const response = await fetch(pythonBackendUrl, {
-        method: req.method,
-        headers,
-        body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined
-      });
-      
-      const data = await response.json();
-      res.status(response.status).json(data);
-    } catch (error) {
-      console.error('Proxy error:', error);
-      res.status(500).json({ error: 'Python backend unavailable' });
-    }
-  });
+  // Direct database-backed API endpoints
+  // (Proxy removed to use database directly)
 
   // Models endpoints
   app.get('/api/models', async (req, res) => {
@@ -62,6 +43,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       const models = await storage.getAllModels();
       res.json(models);
     } catch (error) {
+      console.error('Failed to fetch models:', error);
       res.status(500).json({ error: 'Failed to fetch models' });
     }
   });
@@ -74,6 +56,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
       res.json(model);
     } catch (error) {
+      console.error('Failed to fetch model:', error);
       res.status(500).json({ error: 'Failed to fetch model' });
     }
   });
@@ -84,6 +67,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       const testSuites = await storage.getAllTestSuites();
       res.json(testSuites);
     } catch (error) {
+      console.error('Failed to fetch test suites:', error);
       res.status(500).json({ error: 'Failed to fetch test suites' });
     }
   });
@@ -94,7 +78,19 @@ export async function registerRoutes(app: Express): Promise<void> {
       const testCases = await storage.getTestCasesByTestSuiteId(testSuiteId);
       res.json(testCases);
     } catch (error) {
+      console.error('Failed to fetch test cases:', error);
       res.status(500).json({ error: 'Failed to fetch test cases' });
+    }
+  });
+
+  // Stats endpoint for real-time analytics
+  app.get('/api/stats', async (req, res) => {
+    try {
+      const stats = await storage.getStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+      res.status(500).json({ error: 'Failed to fetch stats' });
     }
   });
 

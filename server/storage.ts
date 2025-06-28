@@ -341,4 +341,138 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { db } from "./db";
+import { eq, count, avg, and } from "drizzle-orm";
+
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+
+  async getAllModels(): Promise<LlmModel[]> {
+    return await db.select().from(llmModels);
+  }
+
+  async getModelByModelId(modelId: string): Promise<LlmModel | undefined> {
+    const [model] = await db.select().from(llmModels).where(eq(llmModels.modelId, modelId));
+    return model || undefined;
+  }
+
+  async createModel(insertModel: InsertLlmModel): Promise<LlmModel> {
+    const [model] = await db.insert(llmModels).values(insertModel).returning();
+    return model;
+  }
+
+  async updateModelStatus(id: number, isActive: boolean): Promise<void> {
+    await db.update(llmModels).set({ isActive }).where(eq(llmModels.id, id));
+  }
+
+  async getAllTestSuites(): Promise<TestSuite[]> {
+    return await db.select().from(testSuites);
+  }
+
+  async getTestSuiteById(id: number): Promise<TestSuite | undefined> {
+    const [testSuite] = await db.select().from(testSuites).where(eq(testSuites.id, id));
+    return testSuite || undefined;
+  }
+
+  async getTestSuiteByName(name: string): Promise<TestSuite | undefined> {
+    const [testSuite] = await db.select().from(testSuites).where(eq(testSuites.name, name));
+    return testSuite || undefined;
+  }
+
+  async createTestSuite(insertTestSuite: InsertTestSuite): Promise<TestSuite> {
+    const [testSuite] = await db.insert(testSuites).values(insertTestSuite).returning();
+    return testSuite;
+  }
+
+  async getTestCasesByTestSuiteId(testSuiteId: number): Promise<TestCase[]> {
+    return await db.select().from(testCases).where(eq(testCases.testSuiteId, testSuiteId));
+  }
+
+  async getTestCaseById(id: number): Promise<TestCase | undefined> {
+    const [testCase] = await db.select().from(testCases).where(eq(testCases.id, id));
+    return testCase || undefined;
+  }
+
+  async createTestCase(insertTestCase: InsertTestCase): Promise<TestCase> {
+    const [testCase] = await db.insert(testCases).values(insertTestCase).returning();
+    return testCase;
+  }
+
+  async createEvaluation(insertEvaluation: InsertEvaluation): Promise<Evaluation> {
+    const [evaluation] = await db.insert(evaluations).values(insertEvaluation).returning();
+    return evaluation;
+  }
+
+  async getEvaluationById(id: number): Promise<Evaluation | undefined> {
+    const [evaluation] = await db.select().from(evaluations).where(eq(evaluations.id, id));
+    return evaluation || undefined;
+  }
+
+  async getEvaluationsByModelId(modelId: string): Promise<Evaluation[]> {
+    return await db.select().from(evaluations).where(eq(evaluations.modelId, modelId));
+  }
+
+  async updateEvaluationStatus(id: number, status: string, completedAt?: Date): Promise<void> {
+    const updateData: any = { status };
+    if (completedAt) {
+      updateData.completedAt = completedAt;
+    }
+    await db.update(evaluations).set(updateData).where(eq(evaluations.id, id));
+  }
+
+  async updateEvaluationScore(id: number, overallScore: number): Promise<void> {
+    await db.update(evaluations).set({ overallScore }).where(eq(evaluations.id, id));
+  }
+
+  async createEvaluationResult(insertResult: InsertEvaluationResult): Promise<EvaluationResult> {
+    const [result] = await db.insert(evaluationResults).values(insertResult).returning();
+    return result;
+  }
+
+  async getEvaluationResultsByEvaluationId(evaluationId: number): Promise<EvaluationResult[]> {
+    return await db.select().from(evaluationResults).where(eq(evaluationResults.evaluationId, evaluationId));
+  }
+
+  async getRecentEvaluationResults(limit = 10): Promise<EvaluationResult[]> {
+    return await db.select().from(evaluationResults).limit(limit);
+  }
+
+  async getStats(): Promise<{
+    totalEvaluations: number;
+    activeModels: number;
+    criticalVulns: number;
+    testsPassed: number;
+    avgScore: number;
+  }> {
+    const [totalEvalsResult] = await db.select({ count: count() }).from(evaluations);
+    const [activeModelsResult] = await db.select({ count: count() }).from(llmModels).where(eq(llmModels.isActive, true));
+    const [criticalVulnsResult] = await db.select({ count: count() }).from(evaluationResults).where(
+      and(eq(evaluationResults.passed, false), eq(evaluationResults.impactSeverity, 'critical'))
+    );
+    const [testsPassedResult] = await db.select({ count: count() }).from(evaluationResults).where(eq(evaluationResults.passed, true));
+    const [avgScoreResult] = await db.select({ avg: avg(evaluationResults.compositeScore) }).from(evaluationResults);
+
+    return {
+      totalEvaluations: totalEvalsResult.count,
+      activeModels: activeModelsResult.count,
+      criticalVulns: criticalVulnsResult.count,
+      testsPassed: testsPassedResult.count,
+      avgScore: Number(avgScoreResult.avg) || 0
+    };
+  }
+}
+
+export const storage = new DatabaseStorage();

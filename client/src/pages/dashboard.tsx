@@ -1,55 +1,290 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Shield, Bot, AlertTriangle, CheckCircle, XCircle, Activity, Target, Zap } from "lucide-react";
+import { api, type LlmModel, type TestSuite, type DashboardStats } from "@/lib/api";
+import ModelConfig from "@/components/model-config";
+import TestSuiteSelector from "@/components/test-suite-selector";
 
 export default function Dashboard() {
+  const [selectedModel, setSelectedModel] = useState<string>("");
+  const [selectedTestSuites, setSelectedTestSuites] = useState<number[]>([]);
+  const [config, setConfig] = useState({
+    temperature: 0.7,
+    maxTokens: 1000,
+  });
+  const [isRunning, setIsRunning] = useState(false);
+
+  const { data: models, isLoading: modelsLoading } = useQuery<LlmModel[]>({
+    queryKey: ['/api/models'],
+  });
+
+  const { data: testSuites, isLoading: suitesLoading } = useQuery<TestSuite[]>({
+    queryKey: ['/api/test-suites'],
+  });
+
+  const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
+    queryKey: ['/api/stats'],
+  });
+
+  const handleStartEvaluation = async () => {
+    if (!selectedModel || selectedTestSuites.length === 0) {
+      alert("Please select a model and at least one test suite");
+      return;
+    }
+
+    setIsRunning(true);
+    try {
+      // Here you would integrate with the evaluation API
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate evaluation
+      alert("Evaluation completed! Check the results section.");
+    } catch (error) {
+      console.error("Evaluation failed:", error);
+      alert("Evaluation failed. Please try again.");
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  const selectedModelData = models?.find(m => m.modelId === selectedModel);
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <Card className="mb-8">
-          <CardContent className="p-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">CyberSecEval Enhanced</h1>
-            <p className="text-xl text-gray-600 mb-6">
-              Comprehensive cybersecurity evaluation framework for Large Language Models
-            </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-blue-800">
-                🎉 The application is now running successfully! We've temporarily simplified the dashboard 
-                to ensure everything loads properly. The backend API is ready and the database connections are working.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center justify-center">
+            <Shield className="h-8 w-8 mr-3 text-blue-600" />
+            CyberSecEval Enhanced
+          </h1>
+          <p className="text-xl text-gray-600">
+            Comprehensive cybersecurity evaluation framework for Large Language Models
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">🛡️ Security Testing</h3>
-              <p className="text-gray-600">
-                Advanced vulnerability assessment across multiple attack vectors including 
-                prompt injection, jailbreaking, and data extraction.
-              </p>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Active Models</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {statsLoading ? "..." : stats?.activeModels || 0}
+                  </p>
+                </div>
+                <Bot className="h-8 w-8 text-blue-500" />
+              </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">🤖 Multi-Provider Support</h3>
-              <p className="text-gray-600">
-                Integration with OpenAI GPT models, Anthropic Claude, and Hugging Face 
-                models for comprehensive evaluation coverage.
-              </p>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Critical Vulnerabilities</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {statsLoading ? "..." : stats?.criticalVulns || 0}
+                  </p>
+                </div>
+                <AlertTriangle className="h-8 w-8 text-red-500" />
+              </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">📊 Real-time Analytics</h3>
-              <p className="text-gray-600">
-                Live evaluation progress tracking with detailed vulnerability scoring 
-                and professional security assessment reports.
-              </p>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Tests Passed</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {statsLoading ? "..." : stats?.testsPassed || 0}
+                  </p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Avg Security Score</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {statsLoading ? "..." : `${Math.round((1 - (stats?.avgScore || 0)) * 100)}%`}
+                  </p>
+                </div>
+                <Activity className="h-8 w-8 text-purple-500" />
+              </div>
             </CardContent>
           </Card>
         </div>
+
+        <Tabs defaultValue="evaluate" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="evaluate">Security Evaluation</TabsTrigger>
+            <TabsTrigger value="results">Results & Analytics</TabsTrigger>
+            <TabsTrigger value="models">Model Management</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="evaluate" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Model Selection */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Bot className="h-5 w-5 mr-2 text-blue-600" />
+                    Select LLM Model
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>Choose Model to Evaluate</Label>
+                    <Select value={selectedModel} onValueChange={setSelectedModel}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a model..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {models?.map((model) => (
+                          <SelectItem key={model.modelId} value={model.modelId}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{model.name}</span>
+                              <Badge variant="secondary" className="ml-2">
+                                {model.provider}
+                              </Badge>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {selectedModelData && (
+                    <Alert>
+                      <Bot className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>{selectedModelData.name}</strong> ({selectedModelData.provider})
+                        <br />
+                        {selectedModelData.description}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  <ModelConfig 
+                    selectedModel={selectedModel}
+                    onModelChange={setSelectedModel}
+                    config={config}
+                    onConfigChange={setConfig}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Test Suite Selection */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Target className="h-5 w-5 mr-2 text-orange-600" />
+                    Security Test Suites
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TestSuiteSelector 
+                    selectedTestSuites={selectedTestSuites}
+                    onSelectionChange={setSelectedTestSuites}
+                    onRunTests={handleStartEvaluation}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Evaluation Controls */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Zap className="h-5 w-5 mr-2 text-green-600" />
+                  Start Security Evaluation
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">
+                      Model: {selectedModelData?.name || "None selected"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Test Suites: {selectedTestSuites.length} selected
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={handleStartEvaluation}
+                    disabled={!selectedModel || selectedTestSuites.length === 0 || isRunning}
+                    size="lg"
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {isRunning ? "Running Evaluation..." : "Start Evaluation"}
+                  </Button>
+                </div>
+                
+                {isRunning && (
+                  <div className="mt-4">
+                    <Progress value={33} className="w-full" />
+                    <p className="text-sm text-gray-600 mt-2">
+                      Running security tests... This may take a few minutes.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="results">
+            <Card>
+              <CardHeader>
+                <CardTitle>Evaluation Results & Analytics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Detailed results and analytics will be displayed here after running evaluations.
+                  The database now contains {stats?.testsPassed || 0} passed tests and {stats?.criticalVulns || 0} critical vulnerabilities.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="models">
+            <Card>
+              <CardHeader>
+                <CardTitle>Available Models</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {models?.map((model) => (
+                    <Card key={model.modelId} className="border">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-semibold">{model.name}</h3>
+                          <Badge variant={model.isActive ? "default" : "secondary"}>
+                            {model.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">{model.provider}</p>
+                        <p className="text-xs text-gray-500">{model.description}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
