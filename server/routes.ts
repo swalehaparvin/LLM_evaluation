@@ -99,8 +99,18 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Evaluation results endpoint
   app.get('/api/evaluation-results', async (req, res) => {
     try {
-      const results = await storage.getRecentEvaluationResults(20);
-      res.json(results);
+      const modelId = req.query.modelId as string;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      
+      if (modelId) {
+        // Filter results by specific model
+        const results = await storage.getEvaluationResultsByModel(modelId, limit);
+        res.json(results);
+      } else {
+        // Return all recent results if no model filter
+        const results = await storage.getRecentEvaluationResults(limit);
+        res.json(results);
+      }
     } catch (error) {
       console.error('Failed to fetch evaluation results:', error);
       res.status(500).json({ error: 'Failed to fetch evaluation results' });

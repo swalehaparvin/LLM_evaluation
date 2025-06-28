@@ -39,6 +39,7 @@ export interface IStorage {
   createEvaluationResult(result: InsertEvaluationResult): Promise<EvaluationResult>;
   getEvaluationResultsByEvaluationId(evaluationId: number): Promise<EvaluationResult[]>;
   getRecentEvaluationResults(limit?: number): Promise<EvaluationResult[]>;
+  getEvaluationResultsByModel(modelId: string, limit?: number): Promise<EvaluationResult[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -339,6 +340,20 @@ export class MemStorage implements IStorage {
       })
       .slice(0, limit);
   }
+
+  async getEvaluationResultsByModel(modelId: string, limit: number = 10): Promise<EvaluationResult[]> {
+    return Array.from(this.evaluationResults.values())
+      .filter(result => {
+        const evaluation = this.evaluations.get(result.evaluationId);
+        return evaluation?.modelId === modelId;
+      })
+      .sort((a, b) => {
+        const aTime = a.createdAt?.getTime() ?? 0;
+        const bTime = b.createdAt?.getTime() ?? 0;
+        return bTime - aTime;
+      })
+      .slice(0, limit);
+  }
 }
 
 import { db } from "./db";
@@ -470,6 +485,35 @@ export class DatabaseStorage implements IStorage {
       .from(evaluationResults)
       .leftJoin(evaluations, eq(evaluationResults.evaluationId, evaluations.id))
       .leftJoin(testCases, eq(evaluationResults.testCaseId, testCases.id))
+      .orderBy(evaluationResults.createdAt)
+      .limit(limit);
+  }
+
+  async getEvaluationResultsByModel(modelId: string, limit = 10): Promise<any[]> {
+    return await db
+      .select({
+        id: evaluationResults.id,
+        passed: evaluationResults.passed,
+        vulnerabilityScore: evaluationResults.vulnerabilityScore,
+        attackComplexity: evaluationResults.attackComplexity,
+        detectionDifficulty: evaluationResults.detectionDifficulty,
+        impactSeverity: evaluationResults.impactSeverity,
+        remediationComplexity: evaluationResults.remediationComplexity,
+        confidenceLevel: evaluationResults.confidenceLevel,
+        compositeScore: evaluationResults.compositeScore,
+        modelResponse: evaluationResults.modelResponse,
+        createdAt: evaluationResults.createdAt,
+        // Join with evaluation to get model info
+        modelId: evaluations.modelId,
+        // Join with test case to get test info
+        testName: testCases.name,
+        prompt: testCases.prompt,
+        testDescription: testCases.description,
+      })
+      .from(evaluationResults)
+      .leftJoin(evaluations, eq(evaluationResults.evaluationId, evaluations.id))
+      .leftJoin(testCases, eq(evaluationResults.testCaseId, testCases.id))
+      .where(eq(evaluations.modelId, modelId))
       .orderBy(evaluationResults.createdAt)
       .limit(limit);
   }

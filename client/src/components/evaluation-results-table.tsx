@@ -56,9 +56,25 @@ const getSeverityIcon = (severity: string, passed: boolean) => {
   }
 };
 
-export default function EvaluationResultsTable() {
+interface EvaluationResultsTableProps {
+  selectedModel?: string;
+}
+
+export default function EvaluationResultsTable({ selectedModel }: EvaluationResultsTableProps) {
+  const queryKey = selectedModel 
+    ? ['/api/evaluation-results', { modelId: selectedModel }]
+    : ['/api/evaluation-results'];
+    
   const { data: results, isLoading } = useQuery<DetailedEvaluationResult[]>({
-    queryKey: ['/api/evaluation-results'],
+    queryKey,
+    queryFn: async () => {
+      const params = selectedModel ? `?modelId=${encodeURIComponent(selectedModel)}` : '';
+      const response = await fetch(`/api/evaluation-results${params}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch evaluation results');
+      }
+      return response.json();
+    },
   });
 
   const exportToPDF = () => {

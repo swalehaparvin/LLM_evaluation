@@ -351,7 +351,7 @@ export default function Dashboard() {
                 <CardTitle>Recent Evaluation Results</CardTitle>
               </CardHeader>
               <CardContent>
-                <EvaluationResultsTable />
+                <EvaluationResultsTable selectedModel={selectedModel} />
               </CardContent>
             </Card>
 
