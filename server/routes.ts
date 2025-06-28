@@ -29,35 +29,17 @@ const runCustomTestSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  const httpServer = createServer(app);
-  const wss = new WebSocketServer({ server: httpServer });
-
-  // WebSocket connection for real-time updates
-  wss.on('connection', (ws) => {
-    console.log('WebSocket client connected');
-    
-    ws.on('message', (message) => {
-      try {
-        const data = JSON.parse(message.toString());
-        
-        if (data.type === 'subscribe_evaluation' && data.evaluationId) {
-          // Temporarily disabled - evaluation engine not ready
-          // evaluationEngine.onProgress(data.evaluationId, (progress) => {
-          //   ws.send(JSON.stringify({
-          //     type: 'evaluation_progress',
-          //     data: progress
-          //   }));
-          // });
-        }
-      } catch (error) {
-        console.error('WebSocket message error:', error);
-      }
-    });
-
-    ws.on('close', () => {
-      console.log('WebSocket client disconnected');
-    });
+  // Basic health check endpoint
+  app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
+
+  // Temporarily disable WebSocket to isolate connection issues
+  // const httpServer = createServer(app);
+  // const wss = new WebSocketServer({ server: httpServer });
+
+  // Return Express app's HTTP server instead
+  const httpServer = createServer(app);
 
   // Models endpoints
   app.get('/api/models', async (req, res) => {
