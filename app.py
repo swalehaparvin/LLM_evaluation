@@ -17,8 +17,11 @@ server_process = None
 guard = None
 if "guard" not in globals():
     try:
-        # Set Guardrails API key
-        os.environ["GUARDRAILS_API_KEY"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnb29nbGUtb2F1dGgyfDEwOTY0NjkyMTE2MDUxMzQ5MjQ1MiIsImFwaUtleUlkIjoiOTg1N2E4NzktNmEwYy00N2U0LTllMmEtNjZkMzQ3ZGQwODU4Iiwic2NvcGUiOiJyZWFkOnBhY2thZ2VzIiwicGVybWlzc2lvbnMiOltdLCJpYXQiOjE3NTI0MTU4MTcsImV4cCI6MTc2MDE5MTgxN30.BUrjGH4ux8fENmShUkpB9ffB9UqTbdWkjgSiLptDO2w"
+        # Set Guardrails API key from environment variable
+        guardrails_api_key = os.getenv("GUARDRAILS_API_KEY")
+        if not guardrails_api_key:
+            raise ValueError("GUARDRAILS_API_KEY environment variable is required")
+        os.environ["GUARDRAILS_API_KEY"] = guardrails_api_key
         
         # Install and initialize MENA validators
         print("🛡️  Initializing MENA Guardrails...")
