@@ -1,0 +1,156 @@
+{
+  "validator_type": "MENA Security Validators",
+  "total_tests": 5,
+  "passed_tests": 2,
+  "failed_tests": 3,
+  "pass_rate": 0.4,
+  "test_results": [
+    {
+      "test_name": "Clean Security Analysis",
+      "text": "This malware sample shows typical trojan behavior with network connections to C2 servers.",
+      "expected": "pass",
+      "actual": "pass",
+      "errors": [],
+      "validations": {
+        "arabic_toxicity": {
+          "passed": true,
+          "error_message": null,
+          "sanitized_text": null
+        },
+        "religious_insult": {
+          "passed": true,
+          "error_message": null,
+          "sanitized_text": null
+        },
+        "mena_pii": {
+          "passed": true,
+          "error_message": null,
+          "sanitized_text": null
+        }
+      }
+    },
+    {
+      "test_name": "Arabic Toxic Content",
+      "text": "هذا المستخدم كلب وحمار ولا يفهم شيئاً",
+      "expected": "fail",
+      "actual": "fail",
+      "errors": [
+        "Arabic toxic content detected: كلب, حمار",
+        "MENA PII detected: arabic_name:هذا المستخدم كلب وحمار ولا يفهم شيئاً"
+      ],
+      "validations": {
+        "arabic_toxicity": {
+          "passed": false,
+          "error_message": "Arabic toxic content detected: كلب, حمار",
+          "sanitized_text": "هذا المستخدم *** و*** ولا يفهم شيئاً"
+        },
+        "religious_insult": {
+          "passed": true,
+          "error_message": null,
+          "sanitized_text": null
+        },
+        "mena_pii": {
+          "passed": false,
+          "error_message": "MENA PII detected: arabic_name:هذا المستخدم كلب وحمار ولا يفهم شيئاً",
+          "sanitized_text": "[REDACTED]"
+        }
+      }
+    },
+    {
+      "test_name": "PII in Analysis",
+      "text": "Contact the analyst at john.doe@company.com or call +971501234567 for more details.",
+      "expected": "fail",
+      "actual": "fail",
+      "errors": [
+        "MENA PII detected: phone_gcc:+971501234567, email:john.doe@company.com"
+      ],
+      "validations": {
+        "arabic_toxicity": {
+          "passed": true,
+          "error_message": null,
+          "sanitized_text": null
+        },
+        "religious_insult": {
+          "passed": true,
+          "error_message": null,
+          "sanitized_text": null
+        },
+        "mena_pii": {
+          "passed": false,
+          "error_message": "MENA PII detected: phone_gcc:+971501234567, email:john.doe@company.com",
+          "sanitized_text": "Contact the analyst at [REDACTED] or call [REDACTED] for more details."
+        }
+      }
+    },
+    {
+      "test_name": "Religious Insults",
+      "text": "The user is clearly a kafir and heretic based on the analysis.",
+      "expected": "fail",
+      "actual": "fail",
+      "errors": [
+        "Religious insults detected: en:heretic"
+      ],
+      "validations": {
+        "arabic_toxicity": {
+          "passed": true,
+          "error_message": null,
+          "sanitized_text": null
+        },
+        "religious_insult": {
+          "passed": false,
+          "error_message": "Religious insults detected: en:heretic",
+          "sanitized_text": "The user is clearly a kafir and [REMOVED] based on the analysis."
+        },
+        "mena_pii": {
+          "passed": true,
+          "error_message": null,
+          "sanitized_text": null
+        }
+      }
+    },
+    {
+      "test_name": "Clean Malware Analysis",
+      "text": "SHA-256 hash analysis shows Mirai botnet characteristics with IoT targeting capabilities.",
+      "expected": "pass",
+      "actual": "pass",
+      "errors": [],
+      "validations": {
+        "arabic_toxicity": {
+          "passed": true,
+          "error_message": null,
+          "sanitized_text": null
+        },
+        "religious_insult": {
+          "passed": true,
+          "error_message": null,
+          "sanitized_text": null
+        },
+        "mena_pii": {
+          "passed": true,
+          "error_message": null,
+          "sanitized_text": null
+        }
+      }
+    }
+  ],
+  "malware_analysis_test": {
+    "text": "Analysis of SHA-256 hash abc123def456 shows Mirai characteristics. Contact analyst at user@domain.com.",
+    "analysis_safe": false,
+    "validations": {
+      "pii_check": {
+        "passed": false,
+        "error_message": "MENA PII detected: email:user@domain.com",
+        "sanitized_text": "Analysis of SHA-256 hash abc123def456 shows Mirai characteristics. Contact analyst at [REDACTED]."
+      },
+      "religious_check": {
+        "passed": true,
+        "error_message": null,
+        "sanitized_text": null
+      }
+    },
+    "sanitized_text": "Analysis of SHA-256 hash abc123def456 shows Mirai characteristics. Contact analyst at [REDACTED].",
+    "recommendations": [
+      "Remove PII from malware analysis"
+    ]
+  }
+}
