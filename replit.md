@@ -117,6 +117,35 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 └── attached_assets/ # Project documentation and assets
 ```
 
+## Version History
+
+### Version 1.0 (January 14, 2025)
+**Deployment Status**: Production-ready for https://cybersecurity-framework.replit.app
+**Core Features**:
+- Complete cybersecurity evaluation framework with 2,417+ test cases
+- Multi-provider LLM support (OpenAI, Anthropic, Hugging Face)
+- Real-time evaluation dashboard with WebSocket updates
+- Comprehensive vulnerability scoring system
+- PDF export functionality for detailed reporting
+- Secure database integration with PostgreSQL
+- Fixed security vulnerability (hard-coded credentials removed)
+
+**Dataset Coverage**:
+- MITRE ATT&CK Framework: 1,000 test cases
+- Standard Prompt Injection: 251 test cases
+- Multilingual Prompt Injection: 1,004 test cases
+- Code Interpreter Exploitation: 100 test cases
+- Spear Phishing & Social Engineering: 50 test cases
+- Memory Corruption & Exploitation: 6 advanced test cases
+- Additional jailbreaking and data extraction test suites
+
+**Technical Stack**:
+- Frontend: React 18 + TypeScript + Tailwind CSS + shadcn/ui
+- Backend: Node.js + Express.js + TypeScript
+- Database: PostgreSQL + Drizzle ORM
+- Build System: Vite + ESBuild
+- Real-time: WebSocket integration
+
 ## Changelog
 - June 28, 2025: Initial setup
 - June 28, 2025: Integrated complete Python evaluation engine with all original cybersecurity test suites
@@ -139,6 +168,8 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 - June 28, 2025: Verified full application functionality with successful model evaluations across multiple LLM providers (Llama-2, Claude-3.5-haiku) and real-time dashboard updates
 - June 28, 2025: Fixed model filtering issue - evaluations now correctly run only for selected models and display filtered results
 - June 28, 2025: Created complete Hugging Face Spaces deployment package with app.py, Dockerfile, and comprehensive deployment guide
+- January 14, 2025: Fixed hard-coded credentials security vulnerability in populate-db.ts
+- January 14, 2025: **Version 1.0 Release** - Production-ready deployment saved for https://cybersecurity-framework.replit.app
 
 ## User Preferences
 
