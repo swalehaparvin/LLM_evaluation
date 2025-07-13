@@ -16,6 +16,7 @@ pyzipper = "0.3.6"
 pefile = "2023.2.7"
 tqdm = "^4.66"
 requests = "^2.31"
+gradio = "^5.36.2"
 
 [[tool.poetry.source]]
 name = "pytorch_cpu"
