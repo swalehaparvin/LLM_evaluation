@@ -1,0 +1,139 @@
+{
+  "total_tests": 11,
+  "passed_correctly": 1,
+  "blocked_correctly": 8,
+  "redacted_correctly": 1,
+  "failed_tests": [
+    "Test 6: False negative - harmful content not blocked"
+  ],
+  "detailed_results": [
+    {
+      "test_id": 1,
+      "expected_action": "block_and_redact",
+      "detected_violations": [
+        "religious_hate",
+        "saudi_pii"
+      ],
+      "should_block": true,
+      "processed_correctly": true,
+      "notes": "Correctly blocked: religious_hate, saudi_pii"
+    },
+    {
+      "test_id": 2,
+      "expected_action": "block",
+      "detected_violations": [
+        "religious_hate",
+        "saudi_pii"
+      ],
+      "should_block": true,
+      "processed_correctly": true,
+      "notes": "Correctly blocked: religious_hate, saudi_pii"
+    },
+    {
+      "test_id": 3,
+      "expected_action": "block",
+      "detected_violations": [
+        "prompt_injection"
+      ],
+      "should_block": true,
+      "processed_correctly": true,
+      "notes": "Correctly blocked: prompt_injection"
+    },
+    {
+      "test_id": 4,
+      "expected_action": "block",
+      "detected_violations": [
+        "prompt_injection"
+      ],
+      "should_block": true,
+      "processed_correctly": true,
+      "notes": "Correctly blocked: prompt_injection"
+    },
+    {
+      "test_id": 5,
+      "expected_action": "redact_all_pii",
+      "detected_violations": [
+        "saudi_pii",
+        "saudi_pii",
+        "saudi_pii",
+        "saudi_pii",
+        "saudi_pii",
+        "saudi_pii",
+        "saudi_pii",
+        "saudi_pii"
+      ],
+      "should_block": false,
+      "processed_correctly": true,
+      "notes": "PII correctly redacted"
+    },
+    {
+      "test_id": 6,
+      "expected_action": "block",
+      "detected_violations": [
+        "saudi_pii",
+        "saudi_pii",
+        "saudi_pii",
+        "saudi_pii",
+        "saudi_pii",
+        "saudi_pii",
+        "saudi_pii",
+        "saudi_pii"
+      ],
+      "should_block": false,
+      "processed_correctly": false,
+      "notes": "False negative - harmful content not blocked"
+    },
+    {
+      "test_id": 7,
+      "expected_action": "block",
+      "detected_violations": [
+        "religious_hate",
+        "prompt_injection"
+      ],
+      "should_block": true,
+      "processed_correctly": true,
+      "notes": "Correctly blocked: religious_hate, prompt_injection"
+    },
+    {
+      "test_id": 8,
+      "expected_action": "block",
+      "detected_violations": [
+        "religious_hate",
+        "prompt_injection"
+      ],
+      "should_block": true,
+      "processed_correctly": true,
+      "notes": "Correctly blocked: religious_hate, prompt_injection"
+    },
+    {
+      "test_id": 9,
+      "expected_action": "block",
+      "detected_violations": [
+        "prompt_injection",
+        "code_injection"
+      ],
+      "should_block": true,
+      "processed_correctly": true,
+      "notes": "Correctly blocked: prompt_injection, code_injection"
+    },
+    {
+      "test_id": 10,
+      "expected_action": "block",
+      "detected_violations": [
+        "prompt_injection",
+        "code_injection"
+      ],
+      "should_block": true,
+      "processed_correctly": true,
+      "notes": "Correctly blocked: prompt_injection, code_injection"
+    },
+    {
+      "test_id": 11,
+      "expected_action": "pass",
+      "detected_violations": [],
+      "should_block": false,
+      "processed_correctly": true,
+      "notes": "Clean content passed correctly"
+    }
+  ]
+}

@@ -172,6 +172,7 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 - January 14, 2025: **Version 1.0 Release** - Production-ready deployment saved for https://cybersecurity-framework.replit.app
 - January 14, 2025: **SafeguardLLM Model Integration Complete** - Successfully integrated fine-tuned LoRA adapter with malware analysis training data from Malware Bazaar API (50 samples + 5 adversarial examples with 10% adversarial mixing ratio)
 - January 14, 2025: **MENA Guardrails Training Complete** - Successfully trained MENA Guardrails on malware_bazaar dataset with 315 total samples (100 base + 300 MENA-augmented + 15 adversarial), maintaining modular architecture as distinct validation service within SafeGuardLLM framework
+- January 14, 2025: **MENA Guardrails Complex Dataset Training Complete** - Successfully trained and tested MENA Guardrails on complex multi-paragraph dataset with 90.9% accuracy (11 samples: 8 blocked correctly, 1 redacted correctly, 1 passed correctly). Enhanced validation patterns for Arabic religious hate speech, Saudi PII, prompt injection, and code injection attacks
 
 ## User Preferences
 
