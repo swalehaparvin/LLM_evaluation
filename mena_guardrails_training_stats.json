@@ -1,0 +1,11 @@
+{
+  "total_samples": 100,
+  "mena_augmented_samples": 300,
+  "adversarial_samples": 15,
+  "validation_samples": 6,
+  "training_started": "2025-07-13T21:26:20.852090",
+  "model_architecture": "modular_mena_guardrails",
+  "integration_type": "distinct_validation_service",
+  "training_completed": "2025-07-13T21:26:30.490835",
+  "success": true
+}
