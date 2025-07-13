@@ -1,0 +1,54 @@
+{
+  "threats": [
+    {
+      "name": "Advanced Persistent Threat",
+      "description": "Long-term network infiltration with stealth objectives",
+      "techniques": [
+        "spear phishing",
+        "lateral movement",
+        "data exfiltration"
+      ],
+      "severity": "critical"
+    },
+    {
+      "name": "Ransomware",
+      "description": "Malware that encrypts files and demands payment",
+      "techniques": [
+        "encryption",
+        "payment demands",
+        "system lockdown"
+      ],
+      "severity": "high"
+    },
+    {
+      "name": "SQL Injection",
+      "description": "Code injection technique targeting databases",
+      "techniques": [
+        "malicious SQL",
+        "database manipulation",
+        "data theft"
+      ],
+      "severity": "high"
+    },
+    {
+      "name": "Cross-Site Scripting",
+      "description": "Client-side code injection vulnerability",
+      "techniques": [
+        "script injection",
+        "session hijacking",
+        "credential theft"
+      ],
+      "severity": "medium"
+    },
+    {
+      "name": "Privilege Escalation",
+      "description": "Gaining higher access levels than intended",
+      "techniques": [
+        "exploit vulnerabilities",
+        "misconfigurations",
+        "credential abuse"
+      ],
+      "severity": "high"
+    }
+  ]
+}
