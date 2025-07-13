@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Shield, Bot, AlertTriangle, CheckCircle, XCircle, Activity, Target, Zap } from "lucide-react";
+import { Shield, Bot, AlertTriangle, CheckCircle, XCircle, Activity, Target, Zap, Globe } from "lucide-react";
+import { Link } from "wouter";
 import { api, type LlmModel, type TestSuite, type DashboardStats } from "@/lib/api";
 import { apiRequest } from "@/lib/queryClient";
 import ModelConfig from "@/components/model-config";
@@ -168,6 +169,29 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <Activity className="h-8 w-8 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Access to MENA Guardrails */}
+        <div className="mb-6">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Globe className="h-8 w-8 text-purple-600" />
+                  <div>
+                    <h3 className="font-semibold text-lg">MENA Guardrails</h3>
+                    <p className="text-sm text-gray-600">Arabic content validation with security policies</p>
+                  </div>
+                </div>
+                <Link href="/mena-guardrails">
+                  <Button variant="outline" className="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200">
+                    <Globe className="h-4 w-4 mr-2" />
+                    Access MENA Guardrails
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

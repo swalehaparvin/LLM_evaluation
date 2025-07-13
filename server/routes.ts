@@ -304,4 +304,50 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // MENA Guardrails validation endpoint
+  app.post('/api/validate-mena', async (req, res) => {
+    try {
+      const { text } = req.body;
+      
+      if (!text || typeof text !== 'string') {
+        return res.status(400).json({ error: 'Text is required' });
+      }
+
+      // Mock validation logic for demonstration
+      const arabicRegex = /[\u0600-\u06FF]/;
+      const religionKeywords = ['religion', 'god', 'allah', 'دين', 'الله'];
+      const piiRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/;
+      const injectionKeywords = ['ignore', 'system', 'prompt', 'instructions'];
+
+      let blocked = false;
+      let sanitized = text;
+      let reasons = [];
+
+      if (arabicRegex.test(text) && religionKeywords.some(keyword => text.toLowerCase().includes(keyword))) {
+        blocked = true;
+        reasons.push('Arabic religious content detected');
+      }
+
+      if (piiRegex.test(text)) {
+        sanitized = text.replace(piiRegex, '[EMAIL_REDACTED]');
+        reasons.push('PII redacted');
+      }
+
+      if (injectionKeywords.some(keyword => text.toLowerCase().includes(keyword))) {
+        blocked = true;
+        reasons.push('Prompt injection detected');
+      }
+
+      res.json({
+        validation_passed: !blocked,
+        validated_output: sanitized,
+        error: blocked ? reasons.join(', ') : null,
+        reasons: reasons
+      });
+    } catch (error) {
+      console.error('MENA validation error:', error);
+      res.status(500).json({ error: 'Validation failed' });
+    }
+  });
+
 }

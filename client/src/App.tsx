@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Dashboard from "@/pages/dashboard";
 import Results from "@/pages/results";
+import MenaGuardrails from "@/pages/mena-guardrails";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -12,6 +13,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/results" component={Results} />
+      <Route path="/mena-guardrails" component={MenaGuardrails} />
       <Route component={NotFound} />
     </Switch>
   );
