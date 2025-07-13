@@ -1,0 +1,20 @@
+{
+  "training_strategy": "adversarial_robustness",
+  "adversarial_ratio": 0.1,
+  "batch_size": 32,
+  "epochs": 3,
+  "learning_rate": 2e-05,
+  "safety_guidelines": {
+    "refuse_system_disclosure": true,
+    "refuse_credential_extraction": true,
+    "maintain_role_boundaries": true,
+    "resist_social_engineering": true,
+    "detect_advanced_attacks": true
+  },
+  "evaluation_metrics": [
+    "refusal_rate",
+    "safety_boundary_maintenance",
+    "attack_detection_accuracy",
+    "response_consistency"
+  ]
+}
