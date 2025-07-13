@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Shield, AlertTriangle, CheckCircle, XCircle, BarChart3, Database, TrendingUp } from 'lucide-react';
 
 export default function MenaGuardrails() {
   const [inputText, setInputText] = useState('');
   const [validationResult, setValidationResult] = useState<any>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [trainingReport, setTrainingReport] = useState<any>(null);
+  const [loadingReport, setLoadingReport] = useState(false);
 
   const testCases = [
     // Arabic Religious/Cultural - Should Block
@@ -92,8 +95,6 @@ export default function MenaGuardrails() {
   const validateContent = async (text: string) => {
     setIsValidating(true);
     try {
-      // Since we're in the frontend, we'll simulate the validation
-      // In a real implementation, this would call the backend MENA validation API
       const response = await fetch('/api/validate-mena', {
         method: 'POST',
         headers: {
@@ -116,6 +117,25 @@ export default function MenaGuardrails() {
       setIsValidating(false);
     }
   };
+
+  const loadTrainingReport = async () => {
+    setLoadingReport(true);
+    try {
+      const response = await fetch('/mena_guardrails_comprehensive_report.json');
+      if (response.ok) {
+        const report = await response.json();
+        setTrainingReport(report);
+      }
+    } catch (error) {
+      console.error('Failed to load training report:', error);
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTrainingReport();
+  }, []);
 
   const simulateValidation = (text: string) => {
     // Mock validation logic for demonstration
@@ -179,7 +199,15 @@ export default function MenaGuardrails() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Tabs defaultValue="testing" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="testing">Content Testing</TabsTrigger>
+          <TabsTrigger value="training">Training Report</TabsTrigger>
+          <TabsTrigger value="datasets">Dataset Analysis</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="testing" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Input Section */}
         <Card>
           <CardHeader>
@@ -339,7 +367,184 @@ export default function MenaGuardrails() {
             </p>
           </CardContent>
         </Card>
-      </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="training" className="space-y-6">
+          {trainingReport ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Summary Cards */}
+              <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-2">
+                      <Database className="h-5 w-5 text-blue-600" />
+                      <span className="text-sm font-medium">Datasets</span>
+                    </div>
+                    <div className="text-2xl font-bold">{trainingReport.datasets_loaded}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-green-600" />
+                      <span className="text-sm font-medium">Training Samples</span>
+                    </div>
+                    <div className="text-2xl font-bold">{trainingReport.total_training_samples}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-purple-600" />
+                      <span className="text-sm font-medium">MENA Accuracy</span>
+                    </div>
+                    <div className="text-2xl font-bold">{(trainingReport.mena_test_accuracy * 100).toFixed(1)}%</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-red-600" />
+                      <span className="text-sm font-medium">Overall Accuracy</span>
+                    </div>
+                    <div className="text-2xl font-bold">{(trainingReport.comprehensive_accuracy * 100).toFixed(1)}%</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* MENA Test Results */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>MENA Test Results</CardTitle>
+                  <CardDescription>
+                    Validation performance on MENA-specific test cases
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {trainingReport.mena_test_results.map((test: any) => (
+                      <div key={test.test_id} className="border rounded-lg p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm">{test.category}</span>
+                          <Badge variant={test.correct ? "default" : "destructive"}>
+                            {test.correct ? (
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                            ) : (
+                              <XCircle className="h-3 w-3 mr-1" />
+                            )}
+                            {test.predicted}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                          {test.text}
+                        </p>
+                        {test.violations.length > 0 && (
+                          <div className="text-xs text-gray-500">
+                            Violations: {test.violations.join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Validation Patterns */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Validation Patterns</CardTitle>
+                  <CardDescription>
+                    Pattern counts by category
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {Object.entries(trainingReport.validation_patterns).map(([pattern, count]) => (
+                      <div key={pattern} className="flex justify-between items-center">
+                        <span className="text-sm font-medium capitalize">
+                          {pattern.replace('_', ' ')}
+                        </span>
+                        <Badge variant="outline">{count}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="text-lg font-semibold">
+                  {loadingReport ? 'Loading Training Report...' : 'No Training Report Available'}
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 mt-2">
+                  {loadingReport ? 'Please wait...' : 'Run the training script to generate a report'}
+                </p>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="datasets" className="space-y-6">
+          {trainingReport ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Dataset Summary</CardTitle>
+                  <CardDescription>
+                    Loaded datasets and sample counts
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {Object.entries(trainingReport.dataset_summary).map(([dataset, count]) => (
+                      <div key={dataset} className="flex justify-between items-center">
+                        <span className="text-sm font-medium truncate">{dataset}</span>
+                        <Badge variant="outline">{count} samples</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Category Performance</CardTitle>
+                  <CardDescription>
+                    Accuracy by content category
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {trainingReport.comprehensive_results?.category_results ? 
+                      Object.entries(trainingReport.comprehensive_results.category_results).map(([category, results]: [string, any]) => (
+                        <div key={category} className="flex justify-between items-center">
+                          <span className="text-sm font-medium capitalize">{category}</span>
+                          <Badge variant={results.accuracy > 0.8 ? "default" : "secondary"}>
+                            {(results.accuracy * 100).toFixed(1)}%
+                          </Badge>
+                        </div>
+                      )) : (
+                        <div className="text-sm text-gray-500">No category results available</div>
+                      )
+                    }
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="text-lg font-semibold">No Dataset Information Available</div>
+                <p className="text-gray-600 dark:text-gray-400 mt-2">
+                  Run the training script to analyze datasets
+                </p>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
