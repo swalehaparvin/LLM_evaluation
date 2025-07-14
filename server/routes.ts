@@ -6,6 +6,7 @@ import { storage } from "./storage";
 // import { evaluationEngine } from "./services/evaluation-engine";
 import { insertEvaluationSchema } from "@shared/schema";
 import { z } from "zod";
+import * as fs from "fs";
 
 const runEvaluationSchema = z.object({
   modelId: z.string(),
@@ -114,6 +115,20 @@ export async function registerRoutes(app: Express): Promise<void> {
     } catch (error) {
       console.error('Failed to fetch MENA dataset:', error);
       res.status(500).json({ error: 'Failed to fetch MENA dataset' });
+    }
+  });
+
+  // MENA Guardrails stats endpoint
+  app.get('/api/mena-stats', (_req, res) => {
+    try {
+      const data = fs.readFileSync('datasets/mena_guardrails_kaggle_fixed.jsonl', 'utf8');
+      const stats = data.split('\n').filter(Boolean)
+                       .map(JSON.parse)
+                       .reduce((acc, r) => { acc[r.label] = (acc[r.label] || 0) + 1; return acc; }, {});
+      res.json(stats);  // {"clean":500,"hate":23,"pii":0,"injection":0}
+    } catch (error) {
+      console.error('Failed to fetch MENA stats:', error);
+      res.status(500).json({ error: 'Failed to fetch MENA stats' });
     }
   });
 
