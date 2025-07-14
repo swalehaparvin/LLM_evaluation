@@ -18,80 +18,6 @@ import EvaluationResultsTable from "@/components/evaluation-results-table";
 import HelpTooltip from "@/components/help-tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-// MENA Stats Component
-function MenaStatsComponent() {
-  const { data: menaStats, isLoading } = useQuery({
-    queryKey: ['/api/mena-stats'],
-    refetchInterval: 5000, // Refresh every 5 seconds
-  });
-
-  if (isLoading) {
-    return (
-      <div className="mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Activity className="h-5 w-5 mr-2 text-green-600" />
-              MENA Guardrails Live Metrics
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="animate-pulse">Loading live metrics...</div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!menaStats) {
-    return null;
-  }
-
-  const total = Object.values(menaStats).reduce((sum: number, count: any) => sum + count, 0);
-  const getColor = (label: string) => {
-    switch (label) {
-      case 'clean': return 'text-green-600 bg-green-50';
-      case 'hate': return 'text-red-600 bg-red-50';
-      case 'pii': return 'text-orange-600 bg-orange-50';
-      case 'injection': return 'text-purple-600 bg-purple-50';
-      default: return 'text-gray-600 bg-gray-50';
-    }
-  };
-
-  return (
-    <div className="mb-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Activity className="h-5 w-5 mr-2 text-green-600" />
-              MENA Guardrails Live Metrics
-            </div>
-            <Badge variant="outline" className="bg-green-50 text-green-700">
-              Live • {total} samples
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Object.entries(menaStats).map(([label, count]) => (
-              <div key={label} className="text-center">
-                <div className={`rounded-lg p-4 ${getColor(label)}`}>
-                  <div className="text-2xl font-bold">{count}</div>
-                  <div className="text-sm font-medium capitalize">{label}</div>
-                  <div className="text-xs opacity-75 mt-1">
-                    {((count / total) * 100).toFixed(1)}%
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
 export default function Dashboard() {
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [selectedTestSuites, setSelectedTestSuites] = useState<number[]>([]);
@@ -270,9 +196,6 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
-
-        {/* MENA Stats Live Metrics */}
-        <MenaStatsComponent />
 
         <Tabs defaultValue="evaluate" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
