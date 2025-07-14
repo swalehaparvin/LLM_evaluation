@@ -14,15 +14,15 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Load authentic Arabic dataset from Kaggle
-dataset_path = Path("datasets/mena_guardrails_kaggle.jsonl")
+# Load authentic Arabic dataset from Kaggle (fixed version)
+dataset_path = Path("datasets/mena_guardrails_kaggle_fixed.jsonl")
 DATASET = []
 if dataset_path.exists():
     with open(dataset_path, encoding='utf-8') as f:
         DATASET = [json.loads(line) for line in f]
-    logger.info(f"Loaded {len(DATASET)} samples from authentic Arabic dataset")
+    logger.info(f"Loaded {len(DATASET)} samples from fixed authentic Arabic dataset")
 else:
-    logger.warning("Dataset not found. Run the data preparation script first.")
+    logger.warning("Fixed dataset not found. Run relabel.py first.")
 
 def get_random_test_suite(n=4):
     """Get random test samples from the authentic Arabic dataset"""

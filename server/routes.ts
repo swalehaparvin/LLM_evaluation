@@ -100,7 +100,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.get('/api/mena-suite', async (req, res) => {
     try {
       const fs = await import('fs');
-      const path = 'datasets/mena_guardrails_kaggle.jsonl';
+      const path = 'datasets/mena_guardrails_kaggle_fixed.jsonl';
       
       if (!fs.existsSync(path)) {
         return res.status(404).json({ error: 'MENA dataset not found' });
