@@ -14,9 +14,7 @@ import time
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Set Guardrails API key
-GUARDRAILS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnb29nbGUtb2F1dGgyfDEwOTY0NjkyMTE2MDUxMzQ5MjQ1MiIsImFwaUtleUlkIjoiOTg1N2E4NzktNmEwYy00N2U0LTllMmEtNjZkMzQ3ZGQwODU4Iiwic2NvcGUiOiJyZWFkOnBhY2thZ2VzIiwicGVybWlzc2lvbnMiOltdLCJpYXQiOjE3NTI0MTU4MTcsImV4cCI6MTc2MDE5MTgxN30.BUrjGH4ux8fENmShUkpB9ffB9UqTbdWkjgSiLptDO2w"
-os.environ["GUARDRAILS_API_KEY"] = GUARDRAILS_API_KEY
+# Guardrails API key is automatically loaded from Replit Secrets
 
 try:
     import guardrails as gd

@@ -9,8 +9,7 @@ from guardrails import Guard, install
 from guardrails.validators import RegexMatch
 import os, openai
 
-# Set the API key
-os.environ["GUARDRAILS_API_KEY"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnb29nbGUtb2F1dGgyfDEwOTY0NjkyMTE2MDUxMzQ5MjQ1MiIsImFwaUtleUlkIjoiOTg1N2E4NzktNmEwYy00N2U0LTllMmEtNjZkMzQ3ZGQwODU4Iiwic2NvcGUiOiJyZWFkOnBhY2thZ2VzIiwicGVybWlzc2lvbnMiOltdLCJpYXQiOjE3NTI0MTU4MTcsImV4cCI6MTc2MDE5MTgxN30.BUrjGH4ux8fENmShUkpB9ffB9UqTbdWkjgSiLptDO2w"
+# Guardrails API key is automatically loaded from Replit Secrets
 
 # --- 1. Install hub validators once (idempotent) -------------
 try:
