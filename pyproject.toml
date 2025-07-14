@@ -20,6 +20,8 @@ gradio = "^5.36.2"
 guardrails-ai = ">=0.4.0"
 openai = "^1.95.1"
 huggingface-hub = "^0.33.4"
+kagglehub = "^0.3.12"
+pandas = "^2.3.1"
 
 [[tool.poetry.source]]
 name = "pytorch_cpu"

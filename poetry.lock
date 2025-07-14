@@ -1544,6 +1544,29 @@ files = [
 referencing = ">=0.31.0"
 
 [[package]]
+name = "kagglehub"
+version = "0.3.12"
+description = "Access Kaggle resources anywhere"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "kagglehub-0.3.12-py3-none-any.whl", hash = "sha256:6eeb7c5c8e1f25a28e9b26d3d8ed0c24a4a32f763ea5de6e1b3aabba442f2a26"},
+    {file = "kagglehub-0.3.12.tar.gz", hash = "sha256:45e75854630a30605b794eb786b3757beccbbea1acca71600642f67b60e0d7bf"},
+]
+
+[package.dependencies]
+packaging = "*"
+pyyaml = "*"
+requests = "*"
+tqdm = "*"
+
+[package.extras]
+hf-datasets = ["datasets", "pandas"]
+pandas-datasets = ["pandas"]
+polars-datasets = ["polars"]
+signing = ["betterproto (>=2.0.0b6)", "model-signing", "sigstore (>=3.6.1)"]
+
+[[package]]
 name = "langchain-core"
 version = "0.3.68"
 description = "Building applications with LLMs through composability"
@@ -4632,4 +4655,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "0ced1ae830bf06c7c50bee95654914734c2bb6eeb67b7b85fa749b054022dc5b"
+content-hash = "9ce6959ae0c77e928edc0fc3482d3df08eda505c1dd4a18c6258a1d6ee7fe70e"
