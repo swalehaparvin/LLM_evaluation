@@ -5,6 +5,7 @@ Custom security validators for MENA region content validation
 """
 import json
 import re
+import random
 from typing import Dict, List, Optional, Any, Union
 from pathlib import Path
 import logging
@@ -12,6 +13,22 @@ import logging
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Load authentic Arabic dataset from Kaggle
+dataset_path = Path("datasets/mena_guardrails_kaggle.jsonl")
+DATASET = []
+if dataset_path.exists():
+    with open(dataset_path, encoding='utf-8') as f:
+        DATASET = [json.loads(line) for line in f]
+    logger.info(f"Loaded {len(DATASET)} samples from authentic Arabic dataset")
+else:
+    logger.warning("Dataset not found. Run the data preparation script first.")
+
+def get_random_test_suite(n=4):
+    """Get random test samples from the authentic Arabic dataset"""
+    if not DATASET:
+        return []
+    return random.sample(DATASET, min(n, len(DATASET)))
 
 class ValidationResult:
     """Result of validation check"""
@@ -346,6 +363,51 @@ def main():
     print(f"  Passed: {passed_tests}")
     print(f"  Failed: {total_tests - passed_tests}")
     print(f"  Pass rate: {passed_tests/total_tests:.1%}")
+    
+    # Test with authentic Arabic dataset
+    print(f"\n🔍 Testing with Authentic Arabic Dataset:")
+    print("-" * 40)
+    
+    if DATASET:
+        # Get random test samples from the authentic dataset
+        test_samples = get_random_test_suite(10)
+        
+        dataset_results = {"clean": 0, "religious_hate": 0, "pii": 0, "prompt_injection": 0}
+        validation_results = {"passed": 0, "failed": 0}
+        
+        for i, sample in enumerate(test_samples, 1):
+            text = sample["text"]
+            label = sample["label"]
+            
+            # Run validation
+            result = validator.validate_comprehensive(text)
+            
+            print(f"\nDataset Sample {i}:")
+            print(f"  Label: {label}")
+            print(f"  Text: {text[:80]}...")
+            print(f"  Validation: {'PASS' if result['overall_passed'] else 'FAIL'}")
+            
+            if not result['overall_passed']:
+                print(f"  Errors: {', '.join(result['errors'])}")
+            
+            # Track results
+            dataset_results[label] += 1
+            if result['overall_passed']:
+                validation_results["passed"] += 1
+            else:
+                validation_results["failed"] += 1
+        
+        print(f"\n📊 Dataset Testing Summary:")
+        print(f"  Total samples tested: {len(test_samples)}")
+        print(f"  Validation passed: {validation_results['passed']}")
+        print(f"  Validation failed: {validation_results['failed']}")
+        print(f"  Success rate: {validation_results['passed']/len(test_samples):.1%}")
+        
+        print(f"\n📋 Sample Distribution:")
+        for label, count in dataset_results.items():
+            print(f"  {label}: {count}")
+    else:
+        print("  No authentic dataset available. Run data preparation first.")
     
     # Test malware analysis specific validation
     print(f"\n🔍 Malware Analysis Validation:")

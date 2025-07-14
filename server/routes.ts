@@ -96,6 +96,27 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // MENA Guardrails dataset endpoint
+  app.get('/api/mena-suite', async (req, res) => {
+    try {
+      const fs = await import('fs');
+      const path = 'datasets/mena_guardrails_kaggle.jsonl';
+      
+      if (!fs.existsSync(path)) {
+        return res.status(404).json({ error: 'MENA dataset not found' });
+      }
+      
+      const data = fs.readFileSync(path, 'utf8');
+      const dataset = data.split('\n').filter(Boolean).map(JSON.parse);
+      
+      // Serve first 50 samples for UI
+      res.json(dataset.slice(0, 50));
+    } catch (error) {
+      console.error('Failed to fetch MENA dataset:', error);
+      res.status(500).json({ error: 'Failed to fetch MENA dataset' });
+    }
+  });
+
   // Evaluation results endpoint
   app.get('/api/evaluation-results', async (req, res) => {
     try {
