@@ -11,6 +11,9 @@ When copying code from this code snippet, ensure you also include this informati
 */
 const ANTHROPIC_DEFAULT_MODEL = "claude-sonnet-4-20250514";
 
+// Llama API default model - using latest Llama 3.3 model
+const LLAMA_DEFAULT_MODEL = "llama-3.3-70b-instruct";
+
 export interface LLMResponse {
   text: string;
   model: string;
@@ -167,12 +170,71 @@ export class HuggingFaceProvider implements LLMProvider {
   }
 }
 
+export class LlamaProvider implements LLMProvider {
+  private modelId: string;
+  private apiKey: string;
+
+  constructor(modelId: string = LLAMA_DEFAULT_MODEL) {
+    this.modelId = modelId;
+    this.apiKey = process.env.LLAMA_API_KEY || '';
+  }
+
+  async generate(prompt: string, systemPrompt?: string, options: GenerateOptions = {}): Promise<LLMResponse> {
+    const { temperature = 0.7, maxTokens = 1000 } = options;
+
+    const messages = [];
+    if (systemPrompt) {
+      messages.push({ role: 'system', content: systemPrompt });
+    }
+    messages.push({ role: 'user', content: prompt });
+
+    try {
+      const response = await fetch('https://api.llama-api.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: this.modelId,
+          messages,
+          temperature,
+          max_tokens: maxTokens,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Llama API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const choice = data.choices?.[0];
+      const text = choice?.message?.content || '';
+
+      return {
+        text: text.trim(),
+        model: this.modelId,
+        usage: data.usage ? {
+          promptTokens: data.usage.prompt_tokens,
+          completionTokens: data.usage.completion_tokens,
+          totalTokens: data.usage.total_tokens,
+        } : undefined,
+        finishReason: choice?.finish_reason || undefined,
+      };
+    } catch (error) {
+      throw new Error(`Llama API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+}
+
 export function createProvider(modelId: string, provider: string): LLMProvider {
   switch (provider) {
     case 'openai':
       return new OpenAIProvider(modelId);
     case 'anthropic':
       return new AnthropicProvider(modelId);
+    case 'llama':
+      return new LlamaProvider(modelId);
     case 'huggingface':
       return new HuggingFaceProvider(modelId);
     default:

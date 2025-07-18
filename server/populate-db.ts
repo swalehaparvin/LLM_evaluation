@@ -72,6 +72,27 @@ async function populateDatabase() {
         name: "Gemini-2.5-Pro",
         description: "Google Gemini 2.5 Pro model with advanced safety settings",
         isActive: true
+      },
+      {
+        modelId: "llama-3.3-70b-instruct",
+        provider: "llama",
+        name: "Llama 3.3 70B Instruct",
+        description: "Meta Llama 3.3 70B Instruct model for advanced reasoning",
+        isActive: true
+      },
+      {
+        modelId: "llama-3.1-405b-instruct",
+        provider: "llama",
+        name: "Llama 3.1 405B Instruct",
+        description: "Meta Llama 3.1 405B Instruct - largest model for complex tasks",
+        isActive: true
+      },
+      {
+        modelId: "llama-3.1-70b-instruct",
+        provider: "llama",
+        name: "Llama 3.1 70B Instruct",
+        description: "Meta Llama 3.1 70B Instruct model",
+        isActive: true
       }
     ];
 

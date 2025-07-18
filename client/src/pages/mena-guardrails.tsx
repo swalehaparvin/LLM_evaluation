@@ -25,6 +25,15 @@ export default function MenaGuardrails() {
     maxOutputTokens: 512
   });
 
+  // Llama test suite state
+  const [isRunningLlama, setIsRunningLlama] = useState(false);
+  const [llamaProgress, setLlamaProgress] = useState(0);
+  const [llamaResults, setLlamaResults] = useState<any[]>([]);
+  const [llamaConfig, setLlamaConfig] = useState({
+    temperature: 0.1,
+    maxOutputTokens: 512
+  });
+
   // Fetch MENA dataset for testing
   const { data: menaDataset } = useQuery({
     queryKey: ['/api/mena-suite'],
@@ -78,6 +87,55 @@ export default function MenaGuardrails() {
     }
     
     setIsRunningGemini(false);
+  };
+
+  // Run Llama test suite
+  const runLlamaTestSuite = async () => {
+    if (!menaDataset) return;
+    
+    setIsRunningLlama(true);
+    setLlamaProgress(0);
+    setLlamaResults([]);
+    
+    const testSamples = menaDataset.slice(0, 50); // First 50 samples
+    const results = [];
+    
+    for (let i = 0; i < testSamples.length; i++) {
+      const sample = testSamples[i];
+      try {
+        const response = await apiRequest('POST', '/api/llama-evaluate', {
+          prompt: sample.text,
+          temperature: llamaConfig.temperature,
+          maxOutputTokens: llamaConfig.maxOutputTokens
+        });
+        
+        const result = await response.json();
+        results.push({
+          sample: sample.text,
+          expected: sample.label,
+          response: result.response,
+          success: result.ok,
+          index: i + 1
+        });
+        
+        setLlamaProgress(((i + 1) / testSamples.length) * 100);
+        setLlamaResults([...results]);
+        
+        // Add small delay to prevent rate limiting
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (error) {
+        console.error('Llama test failed:', error);
+        results.push({
+          sample: sample.text,
+          expected: sample.label,
+          response: 'Error: ' + error.message,
+          success: false,
+          index: i + 1
+        });
+      }
+    }
+    
+    setIsRunningLlama(false);
   };
 
   const testCases = [
@@ -490,6 +548,115 @@ export default function MenaGuardrails() {
                 <h3 className="font-semibold text-lg">Gemini Test Results</h3>
                 <div className="max-h-64 overflow-y-auto space-y-2">
                   {geminiResults.map((result, index) => (
+                    <div key={index} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm">Test {result.index}</span>
+                        <Badge variant={result.success ? "default" : "destructive"}>
+                          {result.success ? (
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                          ) : (
+                            <XCircle className="h-3 w-3 mr-1" />
+                          )}
+                          {result.success ? 'Success' : 'Failed'}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                        Input: {result.sample}
+                      </p>
+                      <p className="text-sm text-gray-800 dark:text-gray-200 truncate">
+                        Response: {result.response}
+                      </p>
+                      <div className="text-xs text-gray-500">
+                        Expected: {result.expected}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Llama Test Suite Section */}
+      <div className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bot className="h-5 w-5 text-purple-600" />
+              Llama-3.3-70B Regression Testing
+            </CardTitle>
+            <CardDescription>
+              Run the 50 MENA samples against Llama 3.3 70B with live parameter tuning
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Temperature: {llamaConfig.temperature}</Label>
+                <Slider
+                  value={[llamaConfig.temperature]}
+                  onValueChange={(value) => setLlamaConfig({...llamaConfig, temperature: value[0]})}
+                  max={1}
+                  min={0}
+                  step={0.1}
+                  className="mt-2"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0.0</span>
+                  <span>1.0</span>
+                </div>
+              </div>
+              
+              <div>
+                <Label>Max Output Tokens</Label>
+                <Input
+                  type="number"
+                  value={llamaConfig.maxOutputTokens}
+                  onChange={(e) => setLlamaConfig({...llamaConfig, maxOutputTokens: parseInt(e.target.value)})}
+                  min={256}
+                  max={4096}
+                  className="mt-2"
+                />
+                <div className="text-xs text-gray-500 mt-1">256 - 4096 tokens</div>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                onClick={runLlamaTestSuite}
+                disabled={isRunningLlama || !menaDataset}
+                className="flex-1"
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                {isRunningLlama ? 'Running Llama Test Suite...' : 'Run Llama Test Suite'}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => window.open('/api/mena-suite', '_blank')}
+              >
+                View Dataset
+              </Button>
+            </div>
+            
+            {isRunningLlama && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Progress</span>
+                  <span>{Math.round(llamaProgress)}%</span>
+                </div>
+                <Progress value={llamaProgress} className="w-full" />
+                <div className="text-xs text-gray-500">
+                  Testing {llamaResults.length} of 50 samples...
+                </div>
+              </div>
+            )}
+            
+            {llamaResults.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg">Llama Test Results</h3>
+                <div className="max-h-64 overflow-y-auto space-y-2">
+                  {llamaResults.map((result, index) => (
                     <div key={index} className="border rounded-lg p-3 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-sm">Test {result.index}</span>
