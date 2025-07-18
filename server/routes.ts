@@ -8,6 +8,7 @@ import { insertEvaluationSchema } from "@shared/schema";
 import { z } from "zod";
 import * as fs from "fs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { memoryService } from "./services/memory";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -297,17 +298,69 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  // Gemini evaluation endpoint
+  // Gemini evaluation endpoint with memory integration
   app.post("/api/gemini-evaluate", async (req, res) => {
-    const { prompt, temperature = 0.1, maxOutputTokens = 512 } = req.body;
+    const { prompt, temperature = 0.1, maxOutputTokens = 512, userId = "default" } = req.body;
     try {
+      // Get enhanced context from memory service
+      const enhancedPrompt = await memoryService.getEnhancedContext(prompt, userId);
+      
       const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        contents: [{ role: "user", parts: [{ text: enhancedPrompt }] }],
         generationConfig: { temperature, maxOutputTokens }
       });
-      res.json({ ok: true, response: result.response.text() });
+      
+      const response = result.response.text();
+      
+      // Store threat information if detected
+      if (response.includes("threat") || response.includes("vulnerability") || response.includes("risk")) {
+        try {
+          await memoryService.storeThreat({
+            threat_type: "Security Evaluation",
+            description: prompt.substring(0, 200) + "...",
+            severity: response.includes("critical") ? "critical" : response.includes("high") ? "high" : "medium",
+            context: response.substring(0, 500) + "...",
+            timestamp: new Date().toISOString(),
+            session_id: `eval-${Date.now()}`
+          }, userId);
+        } catch (memoryError) {
+          console.error("Failed to store threat in memory:", memoryError);
+          // Continue without failing the evaluation
+        }
+      }
+      
+      res.json({ ok: true, response, hasMemoryContext: enhancedPrompt !== prompt });
     } catch (e) {
       res.status(400).json({ ok: false, error: e.message });
+    }
+  });
+
+  // Memory management endpoints
+  app.get("/api/memory/threats/:userId", async (req, res) => {
+    try {
+      const threats = await memoryService.getUserThreatHistory(req.params.userId);
+      res.json({ ok: true, threats });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: e.message });
+    }
+  });
+
+  app.post("/api/memory/search", async (req, res) => {
+    const { query, userId = "default" } = req.body;
+    try {
+      const results = await memoryService.getRelevantThreats(query, userId);
+      res.json({ ok: true, results });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: e.message });
+    }
+  });
+
+  app.delete("/api/memory/threats/:memoryId", async (req, res) => {
+    try {
+      await memoryService.deleteThreat(req.params.memoryId);
+      res.json({ ok: true, message: "Threat deleted from memory" });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: e.message });
     }
   });
 
