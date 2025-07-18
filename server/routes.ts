@@ -8,7 +8,6 @@ import { insertEvaluationSchema } from "@shared/schema";
 import { z } from "zod";
 import * as fs from "fs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { createProvider } from "./services/llm-providers";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -510,38 +509,6 @@ export async function registerRoutes(app: Express): Promise<void> {
     } catch (error) {
       console.error('MENA validation error:', error);
       res.status(500).json({ error: 'Validation failed' });
-    }
-  });
-
-  // Llama evaluation endpoint
-  app.post('/api/llama-evaluate', async (req, res) => {
-    try {
-      const { prompt, temperature = 0.7, maxOutputTokens = 1000 } = req.body;
-      
-      if (!prompt) {
-        return res.status(400).json({ error: 'Prompt is required' });
-      }
-
-      const llamaProvider = createProvider('llama-3.3-70b-instruct', 'llama');
-      const response = await llamaProvider.generate(prompt, undefined, {
-        temperature,
-        maxTokens: maxOutputTokens
-      });
-
-      res.json({
-        response: response.text,
-        model: response.model,
-        usage: response.usage,
-        finishReason: response.finishReason,
-        ok: true
-      });
-    } catch (error) {
-      console.error('Llama evaluation error:', error);
-      res.status(500).json({ 
-        error: 'Llama evaluation failed', 
-        details: error.message,
-        ok: false 
-      });
     }
   });
 
