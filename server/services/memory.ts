@@ -1,23 +1,64 @@
-import mem0ai from 'mem0ai';
+// Note: mem0ai is a Python package, creating a TypeScript wrapper
+// We'll implement a simple in-memory threat storage for now
+interface MemoryStore {
+  [userId: string]: ThreatMemory[];
+}
 
-// Initialize Memory with Gemini configuration
-const memory = mem0ai.Memory.from_config({
-  llm: {
-    provider: "gemini",
-    config: {
-      model: "gemini-2.5-flash",
-      temperature: 0,
-      api_key: process.env.GEMINI_API_KEY
+// Simple in-memory storage for threats (replace with proper database in production)
+const memoryStore: MemoryStore = {};
+
+// Mock Memory class to simulate mem0ai functionality
+class MockMemory {
+  async add(data: any, options: { user_id: string }) {
+    if (!memoryStore[options.user_id]) {
+      memoryStore[options.user_id] = [];
     }
-  },
-  embedder: {
-    provider: "gemini",
-    config: {
-      model: "text-embedding-004",
-      api_key: process.env.GEMINI_API_KEY
-    }
+    
+    const threat: ThreatMemory = {
+      threat_type: data.metadata?.threat_type || "Unknown",
+      description: data.messages[0]?.content || "",
+      severity: data.metadata?.severity || "medium",
+      context: data.messages[1]?.content || "",
+      timestamp: data.metadata?.timestamp || new Date().toISOString(),
+      session_id: data.metadata?.session_id || `session-${Date.now()}`
+    };
+    
+    memoryStore[options.user_id].push(threat);
   }
-});
+
+  async search(query: string, options: { user_id: string; limit: number }) {
+    const userThreats = memoryStore[options.user_id] || [];
+    const lowerQuery = query.toLowerCase();
+    
+    return userThreats
+      .filter(threat => 
+        threat.description.toLowerCase().includes(lowerQuery) ||
+        threat.threat_type.toLowerCase().includes(lowerQuery) ||
+        threat.context.toLowerCase().includes(lowerQuery)
+      )
+      .slice(0, options.limit)
+      .map(threat => ({
+        memory: threat.description,
+        metadata: threat
+      }));
+  }
+
+  async get_all(options: { user_id: string }) {
+    return memoryStore[options.user_id] || [];
+  }
+
+  async update(memoryId: string, data: any) {
+    // Simple implementation for updating
+    console.log('Memory update not implemented in mock');
+  }
+
+  async delete(memoryId: string) {
+    // Simple implementation for deleting
+    console.log('Memory delete not implemented in mock');
+  }
+}
+
+const memory = new MockMemory();
 
 export interface ThreatMemory {
   threat_type: string;
