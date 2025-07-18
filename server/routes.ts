@@ -297,6 +297,20 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // Gemini evaluation endpoint
+  app.post("/api/gemini-evaluate", async (req, res) => {
+    const { prompt, temperature = 0.1, maxOutputTokens = 512 } = req.body;
+    try {
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: { temperature, maxOutputTokens }
+      });
+      res.json({ ok: true, response: result.response.text() });
+    } catch (e) {
+      res.status(400).json({ ok: false, error: e.message });
+    }
+  });
+
   // Custom test endpoint - temporarily disabled
   app.post('/api/custom-test', async (req, res) => {
     try {
