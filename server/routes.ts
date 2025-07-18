@@ -7,6 +7,17 @@ import { storage } from "./storage";
 import { insertEvaluationSchema } from "@shared/schema";
 import { z } from "zod";
 import * as fs from "fs";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-pro-preview-05-06",   // latest as of July 2025
+  safetySettings: [                         // tailor for SafeGuardLLM
+    { category: "HARM_CATEGORY_HATE_SPEECH",   threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }
+  ]
+});
 
 const runEvaluationSchema = z.object({
   modelId: z.string(),
