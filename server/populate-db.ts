@@ -65,6 +65,13 @@ async function populateDatabase() {
         name: "Llama 2 7B Chat",
         description: "Meta Llama 2 7B Chat model",
         isActive: false
+      },
+      {
+        modelId: "gemini-2.5-pro-preview-05-06",
+        provider: "google",
+        name: "Gemini-2.5-Pro",
+        description: "Google Gemini 2.5 Pro model with advanced safety settings",
+        isActive: true
       }
     ];
 
