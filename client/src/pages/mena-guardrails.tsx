@@ -1,84 +1,14 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Slider } from '@/components/ui/slider';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Shield, AlertTriangle, CheckCircle, XCircle, Bot, Zap } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
+import { Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 export default function MenaGuardrails() {
   const [inputText, setInputText] = useState('');
   const [validationResult, setValidationResult] = useState<any>(null);
   const [isValidating, setIsValidating] = useState(false);
-  
-  // Gemini test suite state
-  const [isRunningGemini, setIsRunningGemini] = useState(false);
-  const [geminiProgress, setGeminiProgress] = useState(0);
-  const [geminiResults, setGeminiResults] = useState<any[]>([]);
-  const [geminiConfig, setGeminiConfig] = useState({
-    temperature: 0.1,
-    maxOutputTokens: 512
-  });
-
-  // Fetch MENA dataset for testing
-  const { data: menaDataset } = useQuery({
-    queryKey: ['/api/mena-suite'],
-    enabled: false // Only fetch when needed
-  });
-
-  // Run Gemini test suite
-  const runGeminiTestSuite = async () => {
-    if (!menaDataset) return;
-    
-    setIsRunningGemini(true);
-    setGeminiProgress(0);
-    setGeminiResults([]);
-    
-    const testSamples = menaDataset.slice(0, 50); // First 50 samples
-    const results = [];
-    
-    for (let i = 0; i < testSamples.length; i++) {
-      const sample = testSamples[i];
-      try {
-        const response = await apiRequest('POST', '/api/gemini-evaluate', {
-          prompt: sample.text,
-          temperature: geminiConfig.temperature,
-          maxOutputTokens: geminiConfig.maxOutputTokens
-        });
-        
-        const result = await response.json();
-        results.push({
-          sample: sample.text,
-          expected: sample.label,
-          response: result.response,
-          success: result.ok,
-          index: i + 1
-        });
-        
-        setGeminiProgress(((i + 1) / testSamples.length) * 100);
-        setGeminiResults([...results]);
-        
-        // Add small delay to prevent rate limiting
-        await new Promise(resolve => setTimeout(resolve, 100));
-      } catch (error) {
-        console.error('Gemini test failed:', error);
-        results.push({
-          sample: sample.text,
-          expected: sample.label,
-          response: 'Error: ' + error.message,
-          success: false,
-          index: i + 1
-        });
-      }
-    }
-    
-    setIsRunningGemini(false);
-  };
 
   const testCases = [
     // Arabic Religious/Cultural - Should Block
@@ -407,115 +337,6 @@ export default function MenaGuardrails() {
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Blocks adversarial prompt attacks
             </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Gemini Test Suite Section */}
-      <div className="mt-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bot className="h-5 w-5 text-blue-600" />
-              Gemini-2.5-Pro Regression Testing
-            </CardTitle>
-            <CardDescription>
-              Run the 50 MENA samples against Gemini with live tuning parameters
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Temperature: {geminiConfig.temperature}</Label>
-                <Slider
-                  value={[geminiConfig.temperature]}
-                  onValueChange={(value) => setGeminiConfig({...geminiConfig, temperature: value[0]})}
-                  max={1}
-                  min={0}
-                  step={0.1}
-                  className="mt-2"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>0.0</span>
-                  <span>1.0</span>
-                </div>
-              </div>
-              
-              <div>
-                <Label>Max Output Tokens</Label>
-                <Input
-                  type="number"
-                  value={geminiConfig.maxOutputTokens}
-                  onChange={(e) => setGeminiConfig({...geminiConfig, maxOutputTokens: parseInt(e.target.value)})}
-                  min={256}
-                  max={4096}
-                  className="mt-2"
-                />
-                <div className="text-xs text-gray-500 mt-1">256 - 4096 tokens</div>
-              </div>
-            </div>
-            
-            <div className="flex gap-2">
-              <Button 
-                onClick={runGeminiTestSuite}
-                disabled={isRunningGemini || !menaDataset}
-                className="flex-1"
-              >
-                <Zap className="h-4 w-4 mr-2" />
-                {isRunningGemini ? 'Running Test Suite...' : 'Run Test Suite'}
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => window.open('/api/mena-suite', '_blank')}
-              >
-                View Dataset
-              </Button>
-            </div>
-            
-            {isRunningGemini && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Progress</span>
-                  <span>{Math.round(geminiProgress)}%</span>
-                </div>
-                <Progress value={geminiProgress} className="w-full" />
-                <div className="text-xs text-gray-500">
-                  Testing {geminiResults.length} of 50 samples...
-                </div>
-              </div>
-            )}
-            
-            {geminiResults.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="font-semibold text-lg">Gemini Test Results</h3>
-                <div className="max-h-64 overflow-y-auto space-y-2">
-                  {geminiResults.map((result, index) => (
-                    <div key={index} className="border rounded-lg p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm">Test {result.index}</span>
-                        <Badge variant={result.success ? "default" : "destructive"}>
-                          {result.success ? (
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                          ) : (
-                            <XCircle className="h-3 w-3 mr-1" />
-                          )}
-                          {result.success ? 'Success' : 'Failed'}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                        Input: {result.sample}
-                      </p>
-                      <p className="text-sm text-gray-800 dark:text-gray-200 truncate">
-                        Response: {result.response}
-                      </p>
-                      <div className="text-xs text-gray-500">
-                        Expected: {result.expected}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
