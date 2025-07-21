@@ -58,13 +58,6 @@ async function populateDatabase() {
         name: "Claude 3.5 Haiku",
         description: "Anthropic Claude 3.5 Haiku model",
         isActive: true
-      },
-      {
-        modelId: "meta-llama/Llama-2-7b-chat-hf",
-        provider: "huggingface",
-        name: "Llama 2 7B Chat",
-        description: "Meta Llama 2 7B Chat model",
-        isActive: false
       }
     ];
 
@@ -308,7 +301,7 @@ async function populateDatabase() {
             metadata: {
               testDuration: Math.floor(Math.random() * 5000) + 1000,
               modelProvider: evaluation.modelId.includes('gpt') ? 'openai' : 
-                           evaluation.modelId.includes('claude') ? 'anthropic' : 'huggingface',
+                           evaluation.modelId.includes('claude') ? 'anthropic' : 'google',
               evaluationType: 'automated',
               riskLevel: impactSeverity
             }

@@ -4,7 +4,7 @@ SafeGuardLLM is a comprehensive cybersecurity evaluation framework for systemati
 
 ## Features
 
-- **Multi-Provider LLM Support**: Evaluate OpenAI GPT-4, Anthropic Claude, and Hugging Face models
+- **Multi-Provider LLM Support**: Evaluate OpenAI GPT-4, Anthropic Claude, and Google Gemini models
 - **Comprehensive Test Suites**: 2,417+ test cases spanning:
   - Prompt Injection (251 standard + 1004 multilingual test cases)
   - MITRE ATT&CK Framework (1000 test cases)
@@ -33,7 +33,7 @@ To use SafeGuardLLM, you'll need API keys for the LLM providers you want to test
 
 - `OPENAI_API_KEY` - For GPT models
 - `ANTHROPIC_API_KEY` - For Claude models  
-- `HF_TOKEN` - For Hugging Face models
+- `GEMINI_API_KEY` - For Google Gemini models
 
 ## Local Development
 

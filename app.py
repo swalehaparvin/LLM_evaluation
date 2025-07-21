@@ -198,7 +198,7 @@ with gr.Blocks(title="SafeGuardLLM - Cybersecurity Evaluation Framework") as app
     ### API Keys Required:
     - `OPENAI_API_KEY` - For GPT models
     - `ANTHROPIC_API_KEY` - For Claude models  
-    - `HF_TOKEN` - For Hugging Face models
+    - `GEMINI_API_KEY` - For Hugging Face models
     
     You can set these in the Hugging Face Space settings or in the application interface.
     

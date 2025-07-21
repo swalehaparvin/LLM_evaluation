@@ -119,62 +119,12 @@ export class AnthropicProvider implements LLMProvider {
   }
 }
 
-export class HuggingFaceProvider implements LLMProvider {
-  private modelId: string;
-  private apiKey: string;
-
-  constructor(modelId: string) {
-    this.modelId = modelId;
-    this.apiKey = process.env.HUGGINGFACE_API_KEY || '';
-  }
-
-  async generate(prompt: string, systemPrompt?: string, options: GenerateOptions = {}): Promise<LLMResponse> {
-    const { temperature = 0.7, maxTokens = 1000 } = options;
-
-    const fullPrompt = systemPrompt ? `${systemPrompt}\n\nUser: ${prompt}\nAssistant:` : prompt;
-
-    try {
-      const response = await fetch(`https://api-inference.huggingface.co/models/${this.modelId}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          inputs: fullPrompt,
-          parameters: {
-            temperature,
-            max_new_tokens: maxTokens,
-            return_full_text: false,
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Hugging Face API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const text = data[0]?.generated_text || '';
-
-      return {
-        text: text.trim(),
-        model: this.modelId,
-      };
-    } catch (error) {
-      throw new Error(`Hugging Face API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  }
-}
-
 export function createProvider(modelId: string, provider: string): LLMProvider {
   switch (provider) {
     case 'openai':
       return new OpenAIProvider(modelId);
     case 'anthropic':
       return new AnthropicProvider(modelId);
-    case 'huggingface':
-      return new HuggingFaceProvider(modelId);
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }

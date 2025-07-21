@@ -11,7 +11,7 @@ export const users = pgTable("users", {
 export const llmModels = pgTable("llm_models", {
   id: serial("id").primaryKey(),
   modelId: text("model_id").notNull().unique(),
-  provider: text("provider").notNull(), // 'openai', 'anthropic', 'huggingface'
+  provider: text("provider").notNull(), // 'openai', 'anthropic', 'google'
   name: text("name").notNull(),
   description: text("description"),
   isActive: boolean("is_active").default(true),

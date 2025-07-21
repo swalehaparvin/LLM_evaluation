@@ -1,25 +1,25 @@
-# SafeGuardLLM - Hugging Face Spaces Deployment Guide
+# SafeGuardLLM - Cloud Deployment Guide
 
-This guide will help you deploy SafeGuardLLM to Hugging Face Spaces.
+This guide will help you deploy SafeGuardLLM to cloud platforms.
 
 ## Prerequisites
 
-1. A Hugging Face account (free at https://huggingface.co)
+1. A cloud platform account (Replit, Vercel, Heroku, etc.)
 2. API keys for the LLM providers you want to test:
    - `OPENAI_API_KEY` - For GPT models
    - `ANTHROPIC_API_KEY` - For Claude models
-   - `HF_TOKEN` - For Hugging Face models
+   - `GEMINI_API_KEY` - For Google Gemini models
 
 ## Deployment Steps
 
-### 1. Create a New Hugging Face Space
+### 1. Create a New Deployment
 
-1. Go to https://huggingface.co/new-space
+1. Go to your preferred cloud platform
 2. Fill in the details:
-   - **Space name**: `safeguard-llm` (or your preferred name)
+   - **Project name**: `safeguard-llm` (or your preferred name)
    - **License**: MIT
-   - **SDK**: Gradio
-   - **Hardware**: CPU Basic (free tier) or GPU if needed
+   - **Runtime**: Node.js with PostgreSQL
+   - **Hardware**: CPU Basic (free tier) or upgrade if needed
    - **Visibility**: Public or Private (your choice)
 
 ### 2. Upload Your Code
@@ -53,7 +53,7 @@ git push
 2. Add your API keys:
    - `OPENAI_API_KEY` (if testing OpenAI models)
    - `ANTHROPIC_API_KEY` (if testing Anthropic models)
-   - `HF_TOKEN` (if testing Hugging Face models)
+   - `GEMINI_API_KEY` (if testing Google Gemini models)
 
 ### 4. Space Configuration
 

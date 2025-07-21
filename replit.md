@@ -31,10 +31,11 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 ## Key Components
 
 ### 1. Model Management System
-- Multi-provider LLM integration (OpenAI GPT-4o, Anthropic Claude, Hugging Face models)
+- Multi-provider LLM integration (OpenAI GPT-4o, Anthropic Claude, Google Gemini)
 - Model configuration with temperature and token limits
 - Provider-specific implementations with unified interface
 - Model status tracking and availability monitoring
+- Long-term memory integration with Gemini models
 
 ### 2. Test Suite Framework
 - **Prompt Injection**: Tests for instruction override vulnerabilities (enhanced with 251 standard + 1004 multilingual test cases)
@@ -79,7 +80,7 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 ### LLM Providers
 - **OpenAI**: GPT models with API key authentication
 - **Anthropic**: Claude models with SDK integration
-- **Hugging Face**: Open-source models via Inference API
+- **Google**: Gemini models with long-term memory capabilities
 
 ### Database
 - **PostgreSQL**: Primary data storage via Neon serverless
@@ -173,6 +174,7 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 - January 14, 2025: **SafeguardLLM Model Integration Complete** - Successfully integrated fine-tuned LoRA adapter with malware analysis training data from Malware Bazaar API (50 samples + 5 adversarial examples with 10% adversarial mixing ratio)
 - January 14, 2025: **MENA Guardrails Training Complete** - Successfully trained MENA Guardrails on malware_bazaar dataset with 315 total samples (100 base + 300 MENA-augmented + 15 adversarial), maintaining modular architecture as distinct validation service within SafeGuardLLM framework
 - January 14, 2025: **MENA Guardrails Complex Dataset Training Complete** - Successfully trained and tested MENA Guardrails on complex multi-paragraph dataset with 90.9% accuracy (11 samples: 8 blocked correctly, 1 redacted correctly, 1 passed correctly). Enhanced validation patterns for Arabic religious hate speech, Saudi PII, prompt injection, and code injection attacks
+- July 18, 2025: **Removed Hugging Face Integration** - Completely removed all Hugging Face references from frontend, backend, and codebase. Updated documentation to reflect support for OpenAI, Anthropic, and Google Gemini models only. Cleaned up unused dependencies and simplified provider architecture
 
 ## User Preferences
 
