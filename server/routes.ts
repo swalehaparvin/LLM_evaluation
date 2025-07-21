@@ -8,7 +8,7 @@ import { storage } from "./storage";
 import { insertEvaluationSchema } from "@shared/schema";
 import { z } from "zod";
 import * as fs from "fs";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import { memoryService } from "./services/memory";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -16,8 +16,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const model = genAI.getGenerativeModel({
   model: "gemini-2.0-flash-exp",   // Use a valid model
   safetySettings: [
-    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }
+    { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE }
   ]
 });
 
@@ -116,7 +116,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
 
       const data = fs.readFileSync(path, 'utf8');
-      const dataset = data.split('\n').filter(Boolean).map(JSON.parse);
+      const dataset = data.split('\n').filter(Boolean).map(line => JSON.parse(line));
 
       // Serve first 50 samples for UI
       res.json(dataset.slice(0, 50));
@@ -131,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       const data = fs.readFileSync('datasets/mena_guardrails_kaggle_fixed.jsonl', 'utf8');
       const stats = data.split('\n').filter(Boolean)
-                       .map(JSON.parse)
+                       .map(line => JSON.parse(line))
                        .reduce((acc, r) => { acc[r.label] = (acc[r.label] || 0) + 1; return acc; }, {});
       res.json(stats);
     } catch (error) {
@@ -312,3 +312,17 @@ export async function registerRoutes(app: Express): Promise<void> {
             session_id: `eval-${Date.now()}`
           }, userId);
         } catch (memoryError) {
+          console.log("Failed to store threat info:", memoryError);
+        }
+      }
+
+      // Log evaluation context for debugging
+      console.log(`Evaluation completed for user ${userId}: ${prompt.substring(0, 100)}...`);
+
+      res.json({ ok: true, result: response });
+    } catch (error) {
+      console.error('Gemini API error:', error);
+      res.status(500).json({ ok: false, error: 'Failed to evaluate with Gemini' });
+    }
+  });
+}
