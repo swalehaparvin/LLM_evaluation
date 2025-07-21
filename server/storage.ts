@@ -4,6 +4,8 @@ import {
   type TestSuite, type InsertTestSuite, type TestCase, type InsertTestCase,
   type Evaluation, type InsertEvaluation, type EvaluationResult, type InsertEvaluationResult
 } from "@shared/schema";
+import { db } from "./db";
+import { desc } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -32,6 +34,7 @@ export interface IStorage {
   createEvaluation(evaluation: InsertEvaluation): Promise<Evaluation>;
   getEvaluationById(id: number): Promise<Evaluation | undefined>;
   getEvaluationsByModelId(modelId: string): Promise<Evaluation[]>;
+  getRecentEvaluations(limit?: number): Promise<Evaluation[]>;
   updateEvaluationStatus(id: number, status: string, completedAt?: Date): Promise<void>;
   updateEvaluationScore(id: number, overallScore: number): Promise<void>;
 
@@ -283,6 +286,21 @@ export class MemStorage implements IStorage {
 
   async getEvaluationsByModelId(modelId: string): Promise<Evaluation[]> {
     return Array.from(this.evaluations.values()).filter(evaluation => evaluation.modelId === modelId);
+  }
+
+  async getRecentEvaluations(limit: number = 100): Promise<Evaluation[]> {
+    try {
+      const recentEvaluations = await db
+        .select()
+        .from(evaluations)
+        .orderBy(desc(evaluations.startedAt))
+        .limit(limit);
+      
+      return recentEvaluations;
+    } catch (error) {
+      console.error('Failed to get recent evaluations:', error);
+      return [];
+    }
   }
 
   async updateEvaluationStatus(id: number, status: string, completedAt?: Date): Promise<void> {
