@@ -155,28 +155,26 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
 
     // Prepare table data with test prompt
     const tableData = results.map(result => {
-      // Truncate prompt to first 50 characters for readability
-      const truncatedPrompt = result.prompt.length > 50 
-        ? result.prompt.substring(0, 50) + '...' 
+      // Truncate prompt to first 80 characters for better readability
+      const truncatedPrompt = result.prompt.length > 80 
+        ? result.prompt.substring(0, 80) + '...' 
         : result.prompt;
       
       return [
-        truncatedPrompt,
         result.testName,
+        truncatedPrompt,
         result.modelId,
         result.passed ? 'Pass' : 'Fail',
         (result.vulnerabilityScore * 100).toFixed(1) + '%',
         result.impactSeverity,
-        result.attackComplexity,
-        (result.confidenceLevel * 100).toFixed(1) + '%',
-        new Date(result.createdAt).toLocaleDateString()
+        (result.confidenceLevel * 100).toFixed(1) + '%'
       ];
     });
 
     // Add table with proper spacing
     const tableOptions = {
       startY: 50,
-      head: [['Test Prompt', 'Test Name', 'Model', 'Status', 'Vuln Score', 'Impact', 'Complexity', 'Confidence', 'Date']],
+      head: [['Test Name', 'Test Prompt', 'Model', 'Status', 'Vuln Score', 'Impact', 'Confidence']],
       body: tableData,
       theme: 'striped' as any,
       headStyles: { 
@@ -190,15 +188,13 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
         cellPadding: 3
       },
       columnStyles: {
-        0: { cellWidth: 40 }, // Test Prompt
-        1: { cellWidth: 30 }, // Test Name
-        2: { cellWidth: 22 }, // Model
-        3: { cellWidth: 12 }, // Status
-        4: { cellWidth: 16 }, // Vuln Score
-        5: { cellWidth: 16 }, // Impact
-        6: { cellWidth: 16 }, // Complexity
-        7: { cellWidth: 16 }, // Confidence
-        8: { cellWidth: 18 }  // Date
+        0: { cellWidth: 35 }, // Test Name
+        1: { cellWidth: 50 }, // Test Prompt (expanded)
+        2: { cellWidth: 25 }, // Model
+        3: { cellWidth: 15 }, // Status
+        4: { cellWidth: 20 }, // Vuln Score
+        5: { cellWidth: 20 }, // Impact
+        6: { cellWidth: 20 }  // Confidence
       }
     };
 
@@ -303,13 +299,12 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Test & Prompt</TableHead>
+              <TableHead className="w-1/2">Test & Prompt</TableHead>
               <TableHead>Model</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Severity</TableHead>
               <TableHead>Vulnerability Score</TableHead>
               <TableHead>Confidence</TableHead>
-              <TableHead>Date</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -317,8 +312,8 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
               <TableRow key={result.id}>
                 <TableCell className="font-medium">
                   <div>
-                    <div className="font-semibold">{result.testName}</div>
-                    <div className="text-sm text-gray-500 truncate max-w-48">
+                    <div className="font-semibold mb-2">{result.testName}</div>
+                    <div className="text-sm text-gray-600 whitespace-pre-wrap break-words">
                       {result.prompt}
                     </div>
                   </div>
@@ -361,9 +356,6 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
                   <span className="text-sm font-mono">
                     {(result.confidenceLevel * 100).toFixed(1)}%
                   </span>
-                </TableCell>
-                <TableCell className="text-sm text-gray-500">
-                  {new Date(result.createdAt).toLocaleDateString()}
                 </TableCell>
               </TableRow>
             ))}
