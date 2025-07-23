@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,11 +10,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertTriangle, CheckCircle, XCircle, Download } from "lucide-react";
 import { api } from "@/lib/api";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import PaginationControls from './PaginationControls';
 
 // Extended result type with joined data
 interface DetailedEvaluationResult {
@@ -32,6 +41,20 @@ interface DetailedEvaluationResult {
   testName: string;
   prompt: string;
   testDescription: string;
+}
+
+interface PaginationData {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+interface PaginatedResponse {
+  results: DetailedEvaluationResult[];
+  pagination: PaginationData;
 }
 
 const getSeverityColor = (severity: string) => {
@@ -61,21 +84,60 @@ interface EvaluationResultsTableProps {
 }
 
 export default function EvaluationResultsTable({ selectedModel }: EvaluationResultsTableProps) {
-  const queryKey = selectedModel 
-    ? ['/api/evaluation-results', { modelId: selectedModel }]
-    : ['/api/evaluation-results'];
-    
-  const { data: results, isLoading } = useQuery<DetailedEvaluationResult[]>({
-    queryKey,
-    queryFn: async () => {
-      const params = selectedModel ? `?modelId=${encodeURIComponent(selectedModel)}` : '';
-      const response = await fetch(`/api/evaluation-results${params}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch evaluation results');
-      }
-      return response.json();
-    },
+  const [pagination, setPagination] = useState<PaginationData>({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    limit: 20,
+    hasNextPage: false,
+    hasPrevPage: false
   });
+  const [filters, setFilters] = useState({
+    model: selectedModel || '',
+    testType: '',
+    status: ''
+  });
+
+  const fetchResults = async (page = 1, limit = 20) => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...(filters.model && { model: filters.model }),
+      ...(filters.testType && { testType: filters.testType }),
+      ...(filters.status && { status: filters.status })
+    });
+
+    const response = await fetch(`/api/evaluation-results?${params}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch evaluation results');
+    }
+    return response.json();
+  };
+
+  const { data, isLoading } = useQuery<PaginatedResponse>({
+    queryKey: ['/api/evaluation-results', pagination.currentPage, pagination.limit, filters],
+    queryFn: () => fetchResults(pagination.currentPage, pagination.limit),
+  });
+
+  useEffect(() => {
+    if (data?.pagination) {
+      setPagination(data.pagination);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, model: selectedModel || '' }));
+  }, [selectedModel]);
+
+  const handlePageChange = (page: number) => {
+    setPagination(prev => ({ ...prev, currentPage: page }));
+  };
+
+  const handleLimitChange = (limit: number) => {
+    setPagination(prev => ({ ...prev, limit, currentPage: 1 }));
+  };
+
+  const results = data?.results || [];
 
   const exportToPDF = () => {
     if (!results || results.length === 0) return;
@@ -192,11 +254,50 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Recent Evaluation Results</h3>
+        <h3 className="text-lg font-semibold">Security Evaluation Results</h3>
         <Button onClick={exportToPDF} className="flex items-center gap-2">
           <Download className="h-4 w-4" />
           Export PDF
         </Button>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-center space-x-2">
+          <label className="text-sm font-medium text-gray-700">Model:</label>
+          <Select
+            value={filters.model}
+            onValueChange={(value) => setFilters({ ...filters, model: value })}
+          >
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="All Models" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Models</SelectItem>
+              <SelectItem value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</SelectItem>
+              <SelectItem value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</SelectItem>
+              <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+              <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <label className="text-sm font-medium text-gray-700">Status:</label>
+          <Select
+            value={filters.status}
+            onValueChange={(value) => setFilters({ ...filters, status: value })}
+          >
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="All" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="Pass">Pass</SelectItem>
+              <SelectItem value="Fail">Fail</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       <ScrollArea className="h-96">
         <Table>
@@ -269,6 +370,16 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
           </TableBody>
         </Table>
       </ScrollArea>
+
+      {/* Pagination Controls */}
+      <PaginationControls
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        totalCount={pagination.totalCount}
+        onPageChange={handlePageChange}
+        onLimitChange={handleLimitChange}
+        limit={pagination.limit}
+      />
     </div>
   );
 }

@@ -4,7 +4,6 @@ import {
   type TestSuite, type InsertTestSuite, type TestCase, type InsertTestCase,
   type Evaluation, type InsertEvaluation, type EvaluationResult, type InsertEvaluationResult
 } from "@shared/schema";
-import { db } from "./db";
 import { desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -43,6 +42,18 @@ export interface IStorage {
   getEvaluationResultsByEvaluationId(evaluationId: number): Promise<EvaluationResult[]>;
   getRecentEvaluationResults(limit?: number): Promise<EvaluationResult[]>;
   getEvaluationResultsByModel(modelId: string, limit?: number): Promise<EvaluationResult[]>;
+  
+  // Pagination operations
+  getTotalEvaluationResultsCount(): Promise<number>;
+  getEvaluationResultsPaginated(params: {
+    offset: number;
+    limit: number;
+    model?: string;
+    testType?: string;
+    status?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }): Promise<any[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -371,6 +382,56 @@ export class MemStorage implements IStorage {
       })
       .slice(0, limit);
   }
+
+  async getTotalEvaluationResultsCount(): Promise<number> {
+    return this.evaluationResults.size;
+  }
+
+  async getEvaluationResultsPaginated(params: {
+    offset: number;
+    limit: number;
+    model?: string;
+    testType?: string;
+    status?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }): Promise<any[]> {
+    const { offset, limit, model, testType, status } = params;
+    
+    let results = Array.from(this.evaluationResults.values());
+    
+    // Apply filters
+    if (model) {
+      results = results.filter(result => {
+        const evaluation = this.evaluations.get(result.evaluationId);
+        return evaluation?.modelId === model;
+      });
+    }
+    
+    if (status) {
+      const passedValue = status.toLowerCase() === 'pass';
+      results = results.filter(result => result.passed === passedValue);
+    }
+    
+    // Sort by creation date (most recent first)
+    results.sort((a, b) => {
+      const aTime = a.createdAt?.getTime() ?? 0;
+      const bTime = b.createdAt?.getTime() ?? 0;
+      return bTime - aTime;
+    });
+    
+    // Apply pagination
+    return results.slice(offset, offset + limit).map(result => {
+      const evaluation = this.evaluations.get(result.evaluationId);
+      return {
+        ...result,
+        modelId: evaluation?.modelId,
+        testName: `Test ${result.testCaseId}`,
+        prompt: `Test prompt for case ${result.testCaseId}`,
+        testDescription: `Description for test case ${result.testCaseId}`
+      };
+    });
+  }
 }
 
 import { db } from "./db";
@@ -533,6 +594,70 @@ export class DatabaseStorage implements IStorage {
       .where(eq(evaluations.modelId, modelId))
       .orderBy(evaluationResults.createdAt)
       .limit(limit);
+  }
+
+  async getTotalEvaluationResultsCount(): Promise<number> {
+    const [result] = await db.select({ count: count() }).from(evaluationResults);
+    return result.count;
+  }
+
+  async getEvaluationResultsPaginated(params: {
+    offset: number;
+    limit: number;
+    model?: string;
+    testType?: string;
+    status?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }): Promise<any[]> {
+    const { offset, limit, model, testType, status, sortBy = 'createdAt', sortOrder = 'desc' } = params;
+    
+    let query = db
+      .select({
+        id: evaluationResults.id,
+        passed: evaluationResults.passed,
+        vulnerabilityScore: evaluationResults.vulnerabilityScore,
+        attackComplexity: evaluationResults.attackComplexity,
+        detectionDifficulty: evaluationResults.detectionDifficulty,
+        impactSeverity: evaluationResults.impactSeverity,
+        remediationComplexity: evaluationResults.remediationComplexity,
+        confidenceLevel: evaluationResults.confidenceLevel,
+        compositeScore: evaluationResults.compositeScore,
+        modelResponse: evaluationResults.modelResponse,
+        createdAt: evaluationResults.createdAt,
+        // Join with evaluation to get model info
+        modelId: evaluations.modelId,
+        // Join with test case to get test info
+        testName: testCases.name,
+        prompt: testCases.prompt,
+        testDescription: testCases.description,
+      })
+      .from(evaluationResults)
+      .leftJoin(evaluations, eq(evaluationResults.evaluationId, evaluations.id))
+      .leftJoin(testCases, eq(evaluationResults.testCaseId, testCases.id));
+
+    // Apply filters
+    const conditions = [];
+    if (model) {
+      conditions.push(eq(evaluations.modelId, model));
+    }
+    if (testType) {
+      conditions.push(eq(testCases.name, testType));
+    }
+    if (status) {
+      const passedValue = status.toLowerCase() === 'pass';
+      conditions.push(eq(evaluationResults.passed, passedValue));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    // Apply sorting and pagination
+    return query
+      .orderBy(desc(evaluationResults.createdAt))
+      .limit(limit)
+      .offset(offset);
   }
 
   async getStats(): Promise<{

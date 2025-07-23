@@ -140,22 +140,42 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  // Evaluation results endpoint
+  // Evaluation results endpoint with pagination
   app.get('/api/evaluation-results', async (req, res) => {
     try {
-      const modelId = req.query.modelId as string;
+      const page = req.query.page ? parseInt(req.query.page as string) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
-
-      if (modelId) {
-        const results = await storage.getEvaluationResultsByModel(modelId, limit);
-        res.json(results);
-      } else {
-        const results = await storage.getRecentEvaluationResults(limit);
-        res.json(results);
-      }
+      const offset = (page - 1) * limit;
+      
+      // Get total count for pagination info
+      const totalCount = await storage.getTotalEvaluationResultsCount();
+      const totalPages = Math.ceil(totalCount / limit);
+      
+      // Get paginated results
+      const results = await storage.getEvaluationResultsPaginated({
+        offset,
+        limit,
+        model: req.query.model as string,
+        testType: req.query.testType as string,
+        status: req.query.status as string,
+        sortBy: req.query.sortBy as string || 'date',
+        sortOrder: req.query.sortOrder as string || 'desc'
+      });
+      
+      res.json({
+        results,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalCount,
+          limit,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1
+        }
+      });
     } catch (error) {
-      console.error('Failed to fetch evaluation results:', error);
-      res.status(500).json({ error: 'Failed to fetch evaluation results' });
+      console.error('Error fetching evaluation results:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 

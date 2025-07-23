@@ -1,0 +1,439 @@
+// 1. Update the API endpoint in server/routes.ts
+app.get('/api/evaluation-results', async (req, res) => {
+  try {
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+    const offset = (page - 1) * limit;
+    
+    // Get total count for pagination info
+    const totalCount = await getTotalEvaluationResultsCount();
+    const totalPages = Math.ceil(totalCount / limit);
+    
+    // Get paginated results
+    const results = await getEvaluationResultsPaginated({
+      offset,
+      limit,
+      model: req.query.model as string,
+      testType: req.query.testType as string,
+      status: req.query.status as string,
+      sortBy: req.query.sortBy as string || 'date',
+      sortOrder: req.query.sortOrder as string || 'desc'
+    });
+    
+    res.json({
+      results,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching evaluation results:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// 2. Update storage layer - Add to your storage functions
+async function getTotalEvaluationResultsCount(): Promise<number> {
+  // Implementation depends on your database
+  // Example for SQL:
+  const result = await db.query('SELECT COUNT(*) as count FROM evaluation_results');
+  return result[0].count;
+  
+  // Example for MongoDB:
+  // return await EvaluationResult.countDocuments();
+}
+
+async function getEvaluationResultsPaginated(params: {
+  offset: number;
+  limit: number;
+  model?: string;
+  testType?: string;
+  status?: string;
+  sortBy?: string;
+  sortOrder?: string;
+}): Promise<EvaluationResult[]> {
+  const { offset, limit, model, testType, status, sortBy = 'date', sortOrder = 'desc' } = params;
+  
+  // Build query with filters
+  let query = 'SELECT * FROM evaluation_results WHERE 1=1';
+  const queryParams: any[] = [];
+  
+  if (model) {
+    query += ' AND model = ?';
+    queryParams.push(model);
+  }
+  
+  if (testType) {
+    query += ' AND test_name = ?';
+    queryParams.push(testType);
+  }
+  
+  if (status) {
+    query += ' AND status = ?';
+    queryParams.push(status);
+  }
+  
+  // Add sorting
+  query += ` ORDER BY ${sortBy} ${sortOrder.toUpperCase()}`;
+  
+  // Add pagination
+  query += ' LIMIT ? OFFSET ?';
+  queryParams.push(limit, offset);
+  
+  return await db.query(query, queryParams);
+}
+
+// 3. React Component for Pagination Controls
+import React, { useState, useEffect } from 'react';
+
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  onPageChange: (page: number) => void;
+  onLimitChange: (limit: number) => void;
+  limit: number;
+}
+
+const PaginationControls: React.FC<PaginationProps> = ({
+  currentPage,
+  totalPages,
+  totalCount,
+  onPageChange,
+  onLimitChange,
+  limit
+}) => {
+  const getVisiblePages = () => {
+    const delta = 2; // Show 2 pages before and after current page
+    const range = [];
+    const rangeWithDots = [];
+
+    for (
+      let i = Math.max(2, currentPage - delta);
+      i <= Math.min(totalPages - 1, currentPage + delta);
+      i++
+    ) {
+      range.push(i);
+    }
+
+    if (currentPage - delta > 2) {
+      rangeWithDots.push(1, '...');
+    } else {
+      rangeWithDots.push(1);
+    }
+
+    rangeWithDots.push(...range);
+
+    if (currentPage + delta < totalPages - 1) {
+      rangeWithDots.push('...', totalPages);
+    } else {
+      rangeWithDots.push(totalPages);
+    }
+
+    return rangeWithDots;
+  };
+
+  const visiblePages = totalPages > 1 ? getVisiblePages() : [];
+
+  return (
+    <div className="flex items-center justify-between bg-white px-4 py-3 sm:px-6 border-t border-gray-200">
+      <div className="flex flex-1 justify-between sm:hidden">
+        {/* Mobile pagination */}
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
+
+      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        {/* Results info and per-page selector */}
+        <div className="flex items-center space-x-4">
+          <p className="text-sm text-gray-700">
+            Showing{' '}
+            <span className="font-medium">
+              {Math.min((currentPage - 1) * limit + 1, totalCount)}
+            </span>{' '}
+            to{' '}
+            <span className="font-medium">
+              {Math.min(currentPage * limit, totalCount)}
+            </span>{' '}
+            of <span className="font-medium">{totalCount}</span> results
+          </p>
+          
+          <div className="flex items-center space-x-2">
+            <label htmlFor="limit-select" className="text-sm text-gray-700">
+              Show:
+            </label>
+            <select
+              id="limit-select"
+              value={limit}
+              onChange={(e) => onLimitChange(parseInt(e.target.value))}
+              className="rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={200}>200</option>
+            </select>
+            <span className="text-sm text-gray-700">per page</span>
+          </div>
+        </div>
+
+        {/* Desktop pagination */}
+        <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span className="sr-only">Previous</span>
+            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+            </svg>
+          </button>
+
+          {visiblePages.map((page, index) => (
+            <React.Fragment key={index}>
+              {page === '...' ? (
+                <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
+                  ...
+                </span>
+              ) : (
+                <button
+                  onClick={() => onPageChange(page as number)}
+                  className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+                    page === currentPage
+                      ? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                      : 'text-gray-900'
+                  }`}
+                >
+                  {page}
+                </button>
+              )}
+            </React.Fragment>
+          ))}
+
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span className="sr-only">Next</span>
+            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+            </svg>
+          </button>
+        </nav>
+      </div>
+    </div>
+  );
+};
+
+// 4. Updated main component that uses pagination
+interface EvaluationResult {
+  testPrompt: string;
+  testName: string;
+  model: string;
+  status: 'Pass' | 'Fail';
+  vulnScore: number;
+  impact: string;
+  complexity: string;
+  confidence: number;
+  date: string;
+}
+
+interface PaginationData {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+const SecurityEvaluationReport: React.FC = () => {
+  const [results, setResults] = useState<EvaluationResult[]>([]);
+  const [pagination, setPagination] = useState<PaginationData>({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    limit: 20,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    model: '',
+    testType: '',
+    status: ''
+  });
+
+  const fetchResults = async (page = 1, limit = 20) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+        ...(filters.model && { model: filters.model }),
+        ...(filters.testType && { testType: filters.testType }),
+        ...(filters.status && { status: filters.status })
+      });
+
+      const response = await fetch(`/api/evaluation-results?${params}`);
+      const data = await response.json();
+      
+      setResults(data.results);
+      setPagination(data.pagination);
+    } catch (error) {
+      console.error('Error fetching results:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchResults();
+  }, [filters]);
+
+  const handlePageChange = (page: number) => {
+    fetchResults(page, pagination.limit);
+  };
+
+  const handleLimitChange = (limit: number) => {
+    fetchResults(1, limit);
+  };
+
+  return (
+    <div className="bg-white shadow overflow-hidden sm:rounded-md">
+      <div className="px-4 py-5 sm:px-6">
+        <h3 className="text-lg leading-6 font-medium text-gray-900">
+          Security Evaluation Report
+        </h3>
+        <p className="mt-1 max-w-2xl text-sm text-gray-500">
+          Generated on: {new Date().toLocaleDateString()}
+        </p>
+      </div>
+
+      {/* Filters */}
+      <div className="border-t border-gray-200 px-4 py-4">
+        <div className="flex flex-wrap gap-4">
+          <select
+            value={filters.model}
+            onChange={(e) => setFilters({ ...filters, model: e.target.value })}
+            className="rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="">All Models</option>
+            <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</option>
+            <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
+          </select>
+
+          <select
+            value={filters.status}
+            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+            className="rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="">All Statuses</option>
+            <option value="Pass">Pass</option>
+            <option value="Fail">Fail</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Results Table */}
+      <div className="border-t border-gray-200">
+        {loading ? (
+          <div className="p-8 text-center">Loading...</div>
+        ) : (
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Test
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Vulnerability Score
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Impact
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {results.map((result, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-medium text-gray-900">
+                      {result.testName}
+                    </div>
+                    <div className="text-sm text-gray-500 truncate max-w-xs">
+                      {result.testPrompt}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      result.status === 'Pass' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {result.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {result.vulnScore}%
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      result.impact === 'critical' ? 'bg-red-100 text-red-800' :
+                      result.impact === 'high' ? 'bg-orange-100 text-orange-800' :
+                      result.impact === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {result.impact}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {result.date}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Pagination Controls */}
+      <PaginationControls
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        totalCount={pagination.totalCount}
+        onPageChange={handlePageChange}
+        onLimitChange={handleLimitChange}
+        limit={pagination.limit}
+      />
+    </div>
+  );
+};
+
+export default SecurityEvaluationReport;
