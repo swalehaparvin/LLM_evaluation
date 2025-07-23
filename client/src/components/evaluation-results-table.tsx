@@ -93,18 +93,18 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
     hasPrevPage: false
   });
   const [filters, setFilters] = useState({
-    model: selectedModel || '',
-    testType: '',
-    status: ''
+    model: selectedModel || 'all',
+    testType: 'all',
+    status: 'all'
   });
 
   const fetchResults = async (page = 1, limit = 20) => {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
-      ...(filters.model && { model: filters.model }),
-      ...(filters.testType && { testType: filters.testType }),
-      ...(filters.status && { status: filters.status })
+      ...(filters.model && filters.model !== 'all' && { model: filters.model }),
+      ...(filters.testType && filters.testType !== 'all' && { testType: filters.testType }),
+      ...(filters.status && filters.status !== 'all' && { status: filters.status })
     });
 
     const response = await fetch(`/api/evaluation-results?${params}`);
@@ -126,7 +126,7 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
   }, [data]);
 
   useEffect(() => {
-    setFilters(prev => ({ ...prev, model: selectedModel || '' }));
+    setFilters(prev => ({ ...prev, model: selectedModel || 'all' }));
   }, [selectedModel]);
 
   const handlePageChange = (page: number) => {
@@ -273,7 +273,7 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
               <SelectValue placeholder="All Models" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Models</SelectItem>
+              <SelectItem value="all">All Models</SelectItem>
               <SelectItem value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</SelectItem>
               <SelectItem value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</SelectItem>
               <SelectItem value="gpt-4o">GPT-4o</SelectItem>
@@ -292,7 +292,7 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
               <SelectValue placeholder="All" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="Pass">Pass</SelectItem>
               <SelectItem value="Fail">Fail</SelectItem>
             </SelectContent>
