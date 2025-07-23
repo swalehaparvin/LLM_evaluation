@@ -88,7 +88,7 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
     currentPage: 1,
     totalPages: 1,
     totalCount: 0,
-    limit: 20,
+    limit: 50,
     hasNextPage: false,
     hasPrevPage: false
   });
@@ -98,7 +98,7 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
     status: 'all'
   });
 
-  const fetchResults = async (page = 1, limit = 20) => {
+  const fetchResults = async (page = 1, limit = 50) => {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
@@ -299,7 +299,7 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
           </Select>
         </div>
       </div>
-      <ScrollArea className="h-96">
+      <ScrollArea className="h-[600px]">
         <Table>
           <TableHeader>
             <TableRow>
