@@ -99,15 +99,25 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 - Replit environment configuration with runtime error overlay
 - Cartographer integration for Replit-specific features
 
+### Docker Deployment (New)
+- **Production Deployment**: Complete Docker Compose setup with PostgreSQL, Redis, and Nginx
+- **Development Mode**: Docker Compose with hot reloading and volume mounts
+- **Multi-stage Build**: Optimized Dockerfile with separate build and runtime stages
+- **Service Architecture**: Nginx reverse proxy, Node.js application, PostgreSQL database, Redis cache
+- **Health Checks**: Automated health monitoring for all services
+- **Security**: Non-root user, security headers, rate limiting
+
 ### Build Process
 - Frontend: Vite builds to `dist/public` directory
 - Backend: ESBuild bundles server to `dist/index.js`
 - Database: Drizzle migrations in `migrations` directory
+- Docker: Multi-stage builds for optimized production images
 
 ### Environment Configuration
-- Environment variables for API keys (OpenAI, Anthropic, Hugging Face)
+- Environment variables for API keys (OpenAI, Anthropic, Google Gemini)
 - Database URL configuration for PostgreSQL connection
 - Development/production mode detection
+- Docker environment variables and secrets management
 
 ### File Structure
 ```
@@ -115,7 +125,16 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 ├── server/          # Express backend server
 ├── shared/          # Shared TypeScript schemas and types
 ├── migrations/      # Database migration files
-└── attached_assets/ # Project documentation and assets
+├── attached_assets/ # Project documentation and assets
+├── docker-compose.yml       # Production Docker deployment
+├── docker-compose.dev.yml   # Development Docker deployment
+├── Dockerfile              # Production container image
+├── Dockerfile.dev          # Development container image
+├── nginx.conf              # Nginx reverse proxy configuration
+├── init-db.sql             # PostgreSQL initialization script
+├── deploy.sh               # Automated deployment script
+├── docker-deploy.md        # Docker deployment documentation
+└── System-Design.md        # Complete system architecture document
 ```
 
 ## Version History
@@ -175,6 +194,7 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 - January 14, 2025: **MENA Guardrails Training Complete** - Successfully trained MENA Guardrails on malware_bazaar dataset with 315 total samples (100 base + 300 MENA-augmented + 15 adversarial), maintaining modular architecture as distinct validation service within SafeGuardLLM framework
 - January 14, 2025: **MENA Guardrails Complex Dataset Training Complete** - Successfully trained and tested MENA Guardrails on complex multi-paragraph dataset with 90.9% accuracy (11 samples: 8 blocked correctly, 1 redacted correctly, 1 passed correctly). Enhanced validation patterns for Arabic religious hate speech, Saudi PII, prompt injection, and code injection attacks
 - July 18, 2025: **Removed Hugging Face Integration** - Completely removed all Hugging Face references from frontend, backend, and codebase. Updated documentation to reflect support for OpenAI, Anthropic, and Google Gemini models only. Cleaned up unused dependencies and simplified provider architecture
+- July 26, 2025: **Docker Deployment Implementation** - Created complete Docker deployment infrastructure with multi-stage Dockerfile, Docker Compose configuration for production and development, Nginx reverse proxy, PostgreSQL database setup, Redis caching, automated deployment script, and comprehensive deployment documentation. Added System-Design.md with complete technical architecture documentation
 
 ## User Preferences
 
