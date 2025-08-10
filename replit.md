@@ -93,31 +93,36 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 
 ## Deployment Strategy
 
+### Replit Deployment Configuration
+- **Primary Runtime**: Node.js 20 with Express server
+- **Build Command**: `npm run build` (Vite frontend + ESBuild backend)
+- **Start Command**: `npm start` (runs production server from dist/)
+- **Python Support**: Minimal Python 3.11 for MENA validation scripts only
+- **Port Configuration**: Server runs on port 5000, mapped to port 80
+
 ### Development Environment
 - Vite dev server for frontend hot reloading
 - Express server with TypeScript compilation
 - Replit environment configuration with runtime error overlay
 - Cartographer integration for Replit-specific features
 
-### Docker Deployment (New)
-- **Production Deployment**: Complete Docker Compose setup with PostgreSQL, Redis, and Nginx
-- **Development Mode**: Docker Compose with hot reloading and volume mounts
-- **Multi-stage Build**: Optimized Dockerfile with separate build and runtime stages
-- **Service Architecture**: Nginx reverse proxy, Node.js application, PostgreSQL database, Redis cache
-- **Health Checks**: Automated health monitoring for all services
-- **Security**: Non-root user, security headers, rate limiting
-
 ### Build Process
 - Frontend: Vite builds to `dist/public` directory
 - Backend: ESBuild bundles server to `dist/index.js`
 - Database: Drizzle migrations in `migrations` directory
-- Docker: Multi-stage builds for optimized production images
+- Python Scripts: validators_mena.py for MENA content validation (no heavy dependencies)
 
 ### Environment Configuration
 - Environment variables for API keys (OpenAI, Anthropic, Google Gemini)
 - Database URL configuration for PostgreSQL connection
 - Development/production mode detection
-- Docker environment variables and secrets management
+- No Python package manager needed (uses only standard library)
+
+### Deployment Notes
+- Removed pyproject.toml and uv.lock to avoid deployment conflicts
+- Python validation scripts use only standard library (re, json, pathlib)
+- All heavy ML dependencies removed (PyTorch, datasets, etc.)
+- Focus on Node.js as primary runtime with minimal Python for validation
 
 ### File Structure
 ```
