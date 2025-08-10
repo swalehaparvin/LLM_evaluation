@@ -1,124 +1,149 @@
-# SafeGuardLLM - Cloud Deployment Guide
+# SafeGuardLLM - Deployment Guide
 
-This guide will help you deploy SafeGuardLLM to cloud platforms.
+This guide will help you deploy SafeGuardLLM to Replit and other cloud platforms.
 
 ## Prerequisites
 
-1. A cloud platform account (Replit, Vercel, Heroku, etc.)
+1. A cloud platform account (Replit recommended)
 2. API keys for the LLM providers you want to test:
    - `OPENAI_API_KEY` - For GPT models
    - `ANTHROPIC_API_KEY` - For Claude models
    - `GEMINI_API_KEY` - For Google Gemini models
 
-## Deployment Steps
+## Replit Deployment (Recommended)
 
-### 1. Create a New Deployment
+### 1. Project Configuration
 
-1. Go to your preferred cloud platform
-2. Fill in the details:
-   - **Project name**: `safeguard-llm` (or your preferred name)
-   - **License**: MIT
-   - **Runtime**: Node.js with PostgreSQL
-   - **Hardware**: CPU Basic (free tier) or upgrade if needed
-   - **Visibility**: Public or Private (your choice)
+The project is configured for seamless Replit deployment:
+- **Primary Runtime**: Node.js 20 with Express server
+- **Python Support**: Minimal Python 3.11 for MENA validation scripts only
+- **Database**: PostgreSQL (automatically provisioned)
+- **Port**: Server runs on port 5000
 
-### 2. Upload Your Code
+### 2. Build and Deploy Commands
 
-You have two options:
-
-#### Option A: Git Upload (Recommended)
-1. Clone your Space repository locally
-2. Copy all files from this project to your Space directory
-3. Push to your Space repository:
 ```bash
-git add .
-git commit -m "Initial SafeGuardLLM deployment"
-git push
+# Build the application
+npm run build
+
+# Start production server
+npm start
 ```
 
-#### Option B: Web Interface Upload
-1. In your Space, click "Files" tab
-2. Upload all project files:
-   - `app.py` (main Gradio interface)
-   - `package.json` (Node.js dependencies)
-   - `pyproject.toml` (Python dependencies)
-   - All `client/`, `server/`, `shared/` directories
-   - `Dockerfile`
-   - `README.md`
-   - Other configuration files
+### 3. Important Notes
+
+- **No Python package manager needed**: MENA validation scripts use only Python standard library
+- **No pyproject.toml or requirements.txt**: Removed to avoid deployment conflicts
+- **Single runtime focus**: Node.js is the primary runtime with minimal Python for validation
+
+## Generic Cloud Platform Deployment
+
+### 1. Project Setup
+
+1. Clone or upload the project to your platform
+2. Ensure Node.js 20+ is available
+3. Ensure Python 3.11+ is available (for MENA validation only)
+
+### 2. Build Configuration
+
+```json
+{
+  "build": "npm run build",
+  "start": "npm start",
+  "port": 5000
+}
+```
+
+### 3. Required Files
+
+Essential files for deployment:
+- `package.json` (Node.js dependencies and scripts)
+- All `client/`, `server/`, `shared/` directories
+- `validators_mena.py` (MENA validation script)
+- `vite.config.ts` and `tsconfig.json`
+- Database migration files in `migrations/`
 
 ### 3. Configure Environment Variables
 
-1. In your Space settings, go to the "Variables and secrets" section
-2. Add your API keys:
-   - `OPENAI_API_KEY` (if testing OpenAI models)
-   - `ANTHROPIC_API_KEY` (if testing Anthropic models)
-   - `GEMINI_API_KEY` (if testing Google Gemini models)
+Add your API keys as environment variables:
+- `OPENAI_API_KEY` (if testing OpenAI models)
+- `ANTHROPIC_API_KEY` (if testing Anthropic models)
+- `GEMINI_API_KEY` (if testing Google Gemini models)
+- `DATABASE_URL` (automatically configured on Replit)
 
-### 4. Space Configuration
+### 4. Database Setup
 
-Your Space will automatically use the provided `Dockerfile` and configuration files.
+Run database migrations after deployment:
+```bash
+npm run db:push
+```
 
 ## Key Files for Deployment
 
-- **`app.py`**: Main Gradio interface that wraps your Node.js application
-- **`Dockerfile`**: Configures the deployment environment
-- **`pyproject.toml`**: Python dependencies (Gradio, requests)
 - **`package.json`**: Node.js dependencies and build scripts
+- **`validators_mena.py`**: MENA content validation (uses Python standard library only)
+- **`server/`**: Express backend server
+- **`client/`**: React frontend application
+- **`shared/schema.ts`**: Database schema definitions
 
 ## How It Works
 
-1. The Gradio interface (`app.py`) provides a simple wrapper
-2. It starts your Node.js SafeGuardLLM server in the background
-3. Users can access the full application through the embedded iframe
-4. The server handles all LLM evaluations and data storage
+1. The Express server serves both API and static frontend files
+2. Python scripts are called via child process for MENA validation
+3. WebSocket connections handle real-time evaluation updates
+4. PostgreSQL database stores all evaluation data
 
 ## Troubleshooting
 
 ### Common Issues:
 
 1. **Build Failures**:
-   - Ensure all dependencies are properly listed
-   - Check that Node.js version is compatible (18+)
+   - Ensure Node.js 20+ is installed
+   - Run `npm install` to install dependencies
+   - Check that all TypeScript files compile without errors
 
-2. **API Key Issues**:
-   - Verify keys are set in Space settings
+2. **Python Script Issues**:
+   - Verify Python 3.11+ is available
+   - The `validators_mena.py` script only uses standard library
+   - No external Python packages are required
+
+3. **API Key Issues**:
+   - Verify keys are set as environment variables
    - Check key format and permissions
+   - Test keys with provider APIs directly
 
-3. **Memory Issues**:
-   - Consider upgrading to a larger Space hardware tier
-   - Optimize database queries if needed
+4. **Port Configuration**:
+   - Application runs on port 5000
+   - Ensure port is not blocked by firewall
 
-4. **Port Conflicts**:
-   - The application is configured to use port 7860 (Hugging Face standard)
+5. **Database Connection**:
+   - Verify DATABASE_URL environment variable is set
+   - Run `npm run db:push` to apply migrations
+   - Check PostgreSQL is accessible
 
-### Logs and Debugging:
+### Deployment Checklist:
 
-- Check the Space logs in the "Logs" tab
-- Monitor both Python (Gradio) and Node.js (SafeGuardLLM) logs
-- Use the "Restart Space" button if needed
+✅ Remove any `pyproject.toml` or `requirements.txt` files
+✅ Ensure `package.json` has correct build/start scripts
+✅ Python 3.11+ available for MENA validation
+✅ PostgreSQL database configured
+✅ Environment variables set (API keys, DATABASE_URL)
+✅ Port 5000 is available
 
 ## Post-Deployment
 
-1. Test the application with a small evaluation
-2. Verify all LLM providers work with your API keys
-3. Check that evaluations complete successfully
-4. Test PDF export functionality
-
-## Space Settings Recommendations
-
-- **Hardware**: CPU Basic for light usage, GPU for heavy evaluation workloads
-- **Timeout**: Set to maximum for long-running evaluations
-- **Secrets**: Store all API keys securely in Space settings
-- **README**: Update with usage instructions for your specific deployment
+1. Test the build process: `npm run build`
+2. Verify the production server starts: `npm start`
+3. Test MENA validation endpoint: `/api/validate-mena`
+4. Run a small evaluation to verify LLM providers work
+5. Check WebSocket connections for real-time updates
+6. Test PDF export functionality
 
 ## Support
 
-If you encounter issues:
-1. Check the deployment logs
-2. Verify all files were uploaded correctly
-3. Ensure API keys are properly configured
-4. Test locally first to isolate deployment-specific issues
-
-Your SafeGuardLLM Space will be available at:
-`https://huggingface.co/spaces/YOUR_USERNAME/YOUR_SPACE_NAME`
+If you encounter deployment issues:
+1. Check that no Python package managers (pip, uv) are configured
+2. Verify Node.js is the primary runtime
+3. Ensure Python scripts use only standard library
+4. Test locally with `npm run dev` first
+5. Review server logs for specific error messages

@@ -542,51 +542,71 @@ const useEvaluationProgress = (evaluationId: number) => {
 
 ## Deployment Architecture
 
+### Replit Deployment Configuration
+
+#### Runtime Environment
+- **Primary Runtime**: Node.js 20 with Express server
+- **Secondary Runtime**: Python 3.11 (minimal, for MENA validation only)
+- **Database**: PostgreSQL (automatically provisioned on Replit)
+- **Port Configuration**: Server runs on port 5000
+
+#### Key Deployment Decisions
+- **No Python Package Manager**: Removed pyproject.toml and requirements.txt to avoid conflicts
+- **Single Build System**: All dependencies managed through npm/package.json
+- **Minimal Python**: validators_mena.py uses only Python standard library (re, json, pathlib)
+- **Unified Runtime**: Node.js handles all application logic, Python only for validation scripts
+
 ### Production Environment
 
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  app:
-    build: .
-    ports:
-      - "5000:5000"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-    depends_on:
-      - postgres
-
-  postgres:
-    image: postgres:15
-    environment:
-      - POSTGRES_DB=safeguard_llm
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-volumes:
-  postgres_data:
+```json
+// package.json scripts
+{
+  "scripts": {
+    "dev": "NODE_ENV=development tsx server/index.ts",
+    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "start": "NODE_ENV=production node dist/index.js",
+    "db:push": "drizzle-kit push"
+  }
+}
 ```
+
+#### Environment Variables
+- `DATABASE_URL` - PostgreSQL connection string (auto-configured on Replit)
+- `OPENAI_API_KEY` - OpenAI API key for GPT models
+- `ANTHROPIC_API_KEY` - Anthropic API key for Claude models
+- `GEMINI_API_KEY` - Google API key for Gemini models
+- `NODE_ENV` - Set to 'production' for deployment
 
 ### Build Process
 
 ```bash
-# Frontend Build
-npm run build:client  # Vite builds to dist/public
+# Complete Build (Frontend + Backend)
+npm run build
 
-# Backend Build  
-npm run build:server  # ESBuild bundles to dist/index.js
+# Output Structure:
+# dist/
+#   ├── index.js          # Bundled Express server
+#   └── public/           # Built React frontend
+#       ├── index.html
+#       └── assets/       # JS, CSS, and other assets
 
 # Database Migration
-npm run db:push       # Drizzle schema push
+npm run db:push       # Apply Drizzle schema to database
+
+# Start Production Server
+npm start             # Runs from dist/index.js on port 5000
+```
+
+### Python Integration
+
+The Node.js server calls Python scripts via child process for MENA validation:
+
+```typescript
+// server/routes.ts
+const { execSync } = await import('child_process');
+const result = execSync(`python -c "from validators_mena import validate_mena; import json; print(json.dumps(validate_mena('${text}')))"`, {
+  encoding: 'utf8'
+});
 ```
 
 ## Performance Considerations
