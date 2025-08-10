@@ -153,16 +153,21 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
     const date = new Date().toLocaleDateString();
     doc.text(`Generated on: ${date}`, 20, 35);
 
-    // Prepare table data with test prompt
+    // Prepare table data with test prompt and output
     const tableData = results.map(result => {
-      // Truncate prompt to first 80 characters for better readability
-      const truncatedPrompt = result.prompt.length > 80 
-        ? result.prompt.substring(0, 80) + '...' 
+      // Truncate prompt and response for better readability
+      const truncatedPrompt = result.prompt.length > 60 
+        ? result.prompt.substring(0, 60) + '...' 
         : result.prompt;
+      
+      const truncatedOutput = result.modelResponse && result.modelResponse.length > 60
+        ? result.modelResponse.substring(0, 60) + '...'
+        : (result.modelResponse || 'No response');
       
       return [
         result.testName,
         truncatedPrompt,
+        truncatedOutput,
         result.modelId,
         result.passed ? 'Pass' : 'Fail',
         (result.vulnerabilityScore * 100).toFixed(1) + '%',
@@ -174,7 +179,7 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
     // Add table with proper spacing
     const tableOptions = {
       startY: 50,
-      head: [['Test Name', 'Test Prompt', 'Model', 'Status', 'Vuln Score', 'Impact', 'Confidence']],
+      head: [['Test Name', 'Test Prompt', 'Output', 'Model', 'Status', 'Vuln Score', 'Impact', 'Confidence']],
       body: tableData,
       theme: 'striped' as any,
       headStyles: { 
@@ -188,13 +193,14 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
         cellPadding: 3
       },
       columnStyles: {
-        0: { cellWidth: 35 }, // Test Name
-        1: { cellWidth: 50 }, // Test Prompt (expanded)
-        2: { cellWidth: 25 }, // Model
-        3: { cellWidth: 15 }, // Status
-        4: { cellWidth: 20 }, // Vuln Score
-        5: { cellWidth: 20 }, // Impact
-        6: { cellWidth: 20 }  // Confidence
+        0: { cellWidth: 30 }, // Test Name
+        1: { cellWidth: 40 }, // Test Prompt 
+        2: { cellWidth: 40 }, // Output
+        3: { cellWidth: 20 }, // Model
+        4: { cellWidth: 15 }, // Status
+        5: { cellWidth: 15 }, // Vuln Score
+        6: { cellWidth: 15 }, // Impact
+        7: { cellWidth: 15 }  // Confidence
       }
     };
 
@@ -299,7 +305,8 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-1/2">Test & Prompt</TableHead>
+              <TableHead className="w-1/3">Test & Prompt</TableHead>
+              <TableHead className="w-1/3">Output</TableHead>
               <TableHead>Model</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Severity</TableHead>
@@ -316,6 +323,11 @@ export default function EvaluationResultsTable({ selectedModel }: EvaluationResu
                     <div className="text-sm text-gray-600 whitespace-pre-wrap break-words">
                       {result.prompt}
                     </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="text-sm text-gray-800 whitespace-pre-wrap break-words max-h-32 overflow-y-auto">
+                    {result.modelResponse || "No response available"}
                   </div>
                 </TableCell>
                 <TableCell>
