@@ -54,6 +54,8 @@ export class OpenAIProvider implements LLMProvider {
     messages.push({ role: "user", content: prompt });
 
     try {
+      console.log(`OpenAI: Sending request to ${this.modelId}:`, { prompt: prompt.substring(0, 100), temperature, maxTokens });
+      
       const response = await this.client.chat.completions.create({
         model: this.modelId,
         messages,
@@ -61,8 +63,15 @@ export class OpenAIProvider implements LLMProvider {
         max_tokens: maxTokens,
       });
 
+      const responseText = response.choices[0]?.message?.content || "";
+      console.log(`OpenAI: Received response (${responseText.length} chars):`, responseText ? responseText.substring(0, 100) : 'EMPTY');
+
+      if (!responseText) {
+        console.warn('OpenAI returned empty response!', { response });
+      }
+
       return {
-        text: response.choices[0]?.message?.content || "",
+        text: responseText,
         model: this.modelId,
         usage: response.usage ? {
           promptTokens: response.usage.prompt_tokens,
@@ -72,6 +81,7 @@ export class OpenAIProvider implements LLMProvider {
         finishReason: response.choices[0]?.finish_reason || undefined,
       };
     } catch (error) {
+      console.error('OpenAI API error details:', error);
       throw new Error(`OpenAI API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -92,6 +102,8 @@ export class AnthropicProvider implements LLMProvider {
     const { temperature = 0.7, maxTokens = 1000 } = options;
 
     try {
+      console.log(`Anthropic: Sending request to ${this.modelId}:`, { prompt: prompt.substring(0, 100), temperature, maxTokens });
+      
       const response = await this.client.messages.create({
         model: this.modelId,
         max_tokens: maxTokens,
@@ -102,6 +114,12 @@ export class AnthropicProvider implements LLMProvider {
 
       const content = response.content[0];
       const text = content.type === 'text' ? content.text : '';
+
+      console.log(`Anthropic: Received response (${text.length} chars):`, text ? text.substring(0, 100) : 'EMPTY');
+
+      if (!text) {
+        console.warn('Anthropic returned empty response!', { response });
+      }
 
       return {
         text,
@@ -114,6 +132,7 @@ export class AnthropicProvider implements LLMProvider {
         finishReason: response.stop_reason || undefined,
       };
     } catch (error) {
+      console.error('Anthropic API error details:', error);
       throw new Error(`Anthropic API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

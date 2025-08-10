@@ -126,6 +126,33 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // Test model providers
+  app.post('/api/test-model', async (req, res) => {
+    try {
+      const { provider } = req.body;
+      const { createProvider } = await import('./services/llm-providers');
+      
+      console.log(`Testing ${provider} provider...`);
+      
+      if (provider === 'openai') {
+        const openaiProvider = createProvider('gpt-4', 'openai');
+        const response = await openaiProvider.generate('Say "Hello World"', undefined, { temperature: 0.7, maxTokens: 50 });
+        console.log('OpenAI response:', response);
+        res.json({ success: true, response: response.text, provider: 'openai' });
+      } else if (provider === 'anthropic') {
+        const anthropicProvider = createProvider('claude-3-5-haiku-20241022', 'anthropic');
+        const response = await anthropicProvider.generate('Say "Hello World"', undefined, { temperature: 0.7, maxTokens: 50 });
+        console.log('Anthropic response:', response);
+        res.json({ success: true, response: response.text, provider: 'anthropic' });
+      } else {
+        res.status(400).json({ error: 'Invalid provider' });
+      }
+    } catch (error) {
+      console.error('Model test error:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
   // MENA Guardrails stats endpoint
   app.get('/api/mena-stats', (_req, res) => {
     try {
