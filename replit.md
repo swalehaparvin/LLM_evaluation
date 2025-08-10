@@ -195,6 +195,7 @@ SafeGuardLLM (formerly CyberSecEval Enhanced) is a comprehensive cybersecurity e
 - January 14, 2025: **MENA Guardrails Complex Dataset Training Complete** - Successfully trained and tested MENA Guardrails on complex multi-paragraph dataset with 90.9% accuracy (11 samples: 8 blocked correctly, 1 redacted correctly, 1 passed correctly). Enhanced validation patterns for Arabic religious hate speech, Saudi PII, prompt injection, and code injection attacks
 - July 18, 2025: **Removed Hugging Face Integration** - Completely removed all Hugging Face references from frontend, backend, and codebase. Updated documentation to reflect support for OpenAI, Anthropic, and Google Gemini models only. Cleaned up unused dependencies and simplified provider architecture
 - July 26, 2025: **Docker Deployment Implementation** - Created complete Docker deployment infrastructure with multi-stage Dockerfile, Docker Compose configuration for production and development, Nginx reverse proxy, PostgreSQL database setup, Redis caching, automated deployment script, and comprehensive deployment documentation. Added System-Design.md with complete technical architecture documentation
+- August 10, 2025: **Dependency Management Update** - Successfully removed poetry.lock and transitioned to uv.lock as the single source of truth for Python dependencies. Updated pyproject.toml to use standard Python project format instead of Poetry-specific configuration. All application functionalities remain intact and working
 
 ## User Preferences
 
