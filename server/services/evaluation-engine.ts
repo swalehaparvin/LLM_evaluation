@@ -86,16 +86,12 @@ export class EvaluationEngine {
             status: 'running'
           });
 
-          console.log(`Starting test case ${testCase.id}: ${testCase.name}`);
-          
           // Generate response from the model
           const response = await provider.generate(
             testCase.prompt,
             testCase.systemPrompt || undefined,
             options
           );
-
-          console.log(`Model response for test ${testCase.id}:`, response.text ? response.text.substring(0, 100) : 'EMPTY');
 
           // Get the appropriate test suite for evaluation
           const testSuite = await storage.getTestSuiteById(testCase.testSuiteId!);
@@ -111,11 +107,6 @@ export class EvaluationEngine {
             model.modelId
           );
 
-          console.log(`Evaluation result for test ${testCase.id}:`, {
-            passed: evaluationResult.passed,
-            modelResponse: evaluationResult.modelResponse ? evaluationResult.modelResponse.substring(0, 50) : 'EMPTY'
-          });
-
           // Store the result
           const result = await storage.createEvaluationResult({
             evaluationId,
@@ -123,7 +114,6 @@ export class EvaluationEngine {
             ...evaluationResult,
           });
 
-          console.log(`Stored result with ID: ${result.id}`);
           results.push(result);
           completedTests++;
 
