@@ -13,7 +13,7 @@ SafeGuardLLM is a comprehensive cybersecurity evaluation framework for systemati
   - Memory Corruption & Exploitation (6 test cases)
   - Spear Phishing & Social Engineering (50 test cases)
   - Data Extraction Vulnerabilities
-  - MENA Region Content Validation (with guardrails)
+  - Regional Content Validation (multi-region guardrails)
 
 - **Real-time Analytics**: Live evaluation progress tracking with WebSocket integration
 - **Professional Reporting**: PDF export with detailed vulnerability analysis
@@ -27,7 +27,7 @@ SafeGuardLLM is a comprehensive cybersecurity evaluation framework for systemati
 - **Database**: PostgreSQL with Drizzle ORM
 - **Real-time**: WebSocket integration
 - **Build System**: Vite + ESBuild
-- **Python Support**: Minimal Python 3.11 for MENA validation (standard library only)
+- **Python Support**: Minimal Python 3.11 for regional validation (standard library only)
 
 ## API Keys Required
 
@@ -79,7 +79,7 @@ npm run db:push
 
 ### System Requirements
 - Node.js 20 or higher
-- Python 3.11 or higher (for MENA validation)
+- Python 3.11 or higher (for regional validation)
 - PostgreSQL database
 - 2GB RAM minimum
 - 1GB disk space

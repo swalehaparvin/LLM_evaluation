@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Simple MENA Guardrails Testing Script
-Test content against MENA security policies using OpenAI
+Simple Regional GuardRails Testing Script
+Test content against regional security policies using OpenAI
 """
 
 import os
@@ -15,9 +15,9 @@ def main():
         print("The API key has been configured. Testing will proceed.")
         
     print("="*60)
-    print("🛡️  MENA GUARDRAILS CONTENT TESTING")
+    print("🛡️  REGIONAL GUARDRAILS CONTENT TESTING")
     print("="*60)
-    print("\nEnter text to test against MENA security policies.")
+    print("\nEnter text to test against regional security policies.")
     print("Type 'exit' to quit.\n")
     
     # Initialize guardrails

@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Shield, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
-export default function MenaGuardrails() {
+export default function RegionalGuardrails() {
   const [inputText, setInputText] = useState('');
   const [validationResult, setValidationResult] = useState<any>(null);
   const [isValidating, setIsValidating] = useState(false);
@@ -93,8 +93,8 @@ export default function MenaGuardrails() {
     setIsValidating(true);
     try {
       // Since we're in the frontend, we'll simulate the validation
-      // In a real implementation, this would call the backend MENA validation API
-      const response = await fetch('/api/validate-mena', {
+      // In a real implementation, this would call the backend regional validation API
+      const response = await fetch('/api/validate-regional', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,10 +172,10 @@ export default function MenaGuardrails() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
           <Shield className="h-8 w-8 text-blue-600" />
-          MENA Guardrails
+          Regional GuardRails
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Advanced content validation for Arabic, religious, and PII content with prompt injection protection
+          Advanced multi-regional content validation with cultural sensitivity, PII protection, and security threat detection
         </p>
       </div>
 
@@ -185,7 +185,7 @@ export default function MenaGuardrails() {
           <CardHeader>
             <CardTitle>Content Validation</CardTitle>
             <CardDescription>
-              Test content against MENA security policies
+              Test content against regional security policies
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

@@ -1,7 +1,7 @@
 """
-SafeguardLLM ‑ MENA Guardrails
+SafeguardLLM ‑ Regional GuardRails
 Wraps ANY LLM call (DialoGPT, local, OpenAI…) with
-  • Cultural / Religious / Dialect safety
+  • Cultural / Religious / Dialect safety (multi-regional)
   • PDPL & GDPR PII redaction
   • Jail-break & prompt-injection filters
 """
@@ -26,7 +26,7 @@ try:
         PromptInjection(on_fail="exception")
     )
     
-    print("✅ MENA Guardrails loaded successfully with API key")
+    print("✅ Regional GuardRails loaded successfully with API key")
     
 except Exception as e:
     print(f"⚠️  Warning: Could not load hub validators: {e}")

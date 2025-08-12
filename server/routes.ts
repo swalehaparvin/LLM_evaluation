@@ -105,14 +105,14 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  // MENA Guardrails dataset endpoint
-  app.get('/api/mena-suite', async (req, res) => {
+  // Regional GuardRails dataset endpoint
+  app.get('/api/regional-suite', async (req, res) => {
     try {
       const fs = await import('fs');
       const path = 'datasets/mena_guardrails_kaggle_fixed.jsonl';
 
       if (!fs.existsSync(path)) {
-        return res.status(404).json({ error: 'MENA dataset not found' });
+        return res.status(404).json({ error: 'Regional dataset not found' });
       }
 
       const data = fs.readFileSync(path, 'utf8');
@@ -121,13 +121,13 @@ export async function registerRoutes(app: Express): Promise<void> {
       // Serve first 50 samples for UI
       res.json(dataset.slice(0, 50));
     } catch (error) {
-      console.error('Failed to fetch MENA dataset:', error);
-      res.status(500).json({ error: 'Failed to fetch MENA dataset' });
+      console.error('Failed to fetch regional dataset:', error);
+      res.status(500).json({ error: 'Failed to fetch regional dataset' });
     }
   });
 
-  // MENA Guardrails stats endpoint
-  app.get('/api/mena-stats', (_req, res) => {
+  // Regional GuardRails stats endpoint
+  app.get('/api/regional-stats', (_req, res) => {
     try {
       const data = fs.readFileSync('datasets/mena_guardrails_kaggle_fixed.jsonl', 'utf8');
       const stats = data.split('\n').filter(Boolean)
@@ -135,13 +135,13 @@ export async function registerRoutes(app: Express): Promise<void> {
                        .reduce((acc, r) => { acc[r.label] = (acc[r.label] || 0) + 1; return acc; }, {});
       res.json(stats);
     } catch (error) {
-      console.error('Failed to fetch MENA stats:', error);
-      res.status(500).json({ error: 'Failed to fetch MENA stats' });
+      console.error('Failed to fetch regional stats:', error);
+      res.status(500).json({ error: 'Failed to fetch regional stats' });
     }
   });
 
-  // MENA Guardrails validation endpoint with OpenAI integration
-  app.post('/api/validate-mena', async (req, res) => {
+  // Regional GuardRails validation endpoint with OpenAI integration
+  app.post('/api/validate-regional', async (req, res) => {
     try {
       const { text } = req.body;
       

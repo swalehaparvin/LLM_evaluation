@@ -1,8 +1,8 @@
-# 🛡️ MENA Guardrails with OpenAI Integration
+# 🛡️ Regional GuardRails with OpenAI Integration
 
 ## Overview
 
-The MENA Guardrails system provides comprehensive content security testing tailored for the Middle East and North Africa region. It combines fast local validators with OpenAI's GPT-4o model for sophisticated content analysis, ensuring both speed and accuracy in detecting security and cultural sensitivity issues.
+The Regional GuardRails system provides comprehensive content security testing with multi-regional support including Middle East, North Africa, Asia, and other regions. It combines fast local validators with OpenAI's GPT-4o model for sophisticated content analysis, ensuring both speed and accuracy in detecting security and cultural sensitivity issues across diverse regions.
 
 ## ✅ Features
 
@@ -45,14 +45,14 @@ export OPENAI_API_KEY="your-api-key-here"
 ## 📁 File Structure
 
 ```
-MENA Guardrails/
-├── validators_mena.py           # Local validation patterns
+Regional GuardRails/
+├── validators_mena.py           # Local validation patterns (supports multiple regions)
 ├── guardrails_mena.py          # Core guardrails implementation
 ├── test_mena_with_openai.py    # OpenAI integration & testing
 ├── test_mena_simple.py         # Interactive CLI testing
 ├── mena_guardrails_app.py      # Gradio web interface
 ├── mena_openai_test_results.json # Test results output
-└── MENA_GUARDRAILS_OPENAI.md   # This documentation
+└── REGIONAL_GUARDRAILS_OPENAI.md   # This documentation
 ```
 
 ## 🧪 Testing Methods
@@ -75,10 +75,10 @@ python mena_guardrails_app.py
 
 ### 3. Python Integration
 ```python
-from test_mena_with_openai import MENAGuardrailsOpenAI
+from test_mena_with_openai import RegionalGuardrailsOpenAI
 
 # Initialize
-guardrails = MENAGuardrailsOpenAI()
+guardrails = RegionalGuardrailsOpenAI()
 
 # Test content
 result = guardrails.test_content("Your text here")
@@ -180,7 +180,7 @@ Modify the system prompt in `test_mena_with_openai.py` to add new checking crite
 
 ## 📝 Integration with SafeGuardLLM
 
-The MENA Guardrails system is designed to integrate seamlessly with the SafeGuardLLM framework:
+The Regional GuardRails system is designed to integrate seamlessly with the SafeGuardLLM framework:
 
 1. **Standalone Testing**: Use for pre-deployment content validation
 2. **Real-time Filtering**: Integrate with chat applications
@@ -189,7 +189,7 @@ The MENA Guardrails system is designed to integrate seamlessly with the SafeGuar
 
 ## ✨ Key Benefits
 
-- **Cultural Sensitivity**: Respects MENA region values and norms
+- **Cultural Sensitivity**: Respects values and norms across multiple regions
 - **Dual Protection**: Combines speed of local checks with AI intelligence
 - **Comprehensive Coverage**: Addresses multiple security dimensions
 - **Easy Integration**: Simple API for existing applications

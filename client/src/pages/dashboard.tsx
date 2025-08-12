@@ -182,14 +182,14 @@ export default function Dashboard() {
                 <div className="flex items-center space-x-3">
                   <Globe className="h-8 w-8 text-purple-600" />
                   <div>
-                    <h3 className="font-semibold text-lg">MENA Guardrails</h3>
-                    <p className="text-sm text-gray-600">Arabic content validation with security policies</p>
+                    <h3 className="font-semibold text-lg">Regional GuardRails</h3>
+                    <p className="text-sm text-gray-600">Multi-regional content validation with security policies</p>
                   </div>
                 </div>
-                <Link href="/mena-guardrails">
+                <Link href="/regional-guardrails">
                   <Button variant="outline" className="bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200">
                     <Globe className="h-4 w-4 mr-2" />
-                    Access MENA Guardrails
+                    Access Regional GuardRails
                   </Button>
                 </Link>
               </div>
