@@ -4,8 +4,11 @@ import { z } from "zod";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  email: text("email").notNull().unique(),
+  username: text("username"),
+  passwordHash: text("password_hash").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastLogin: timestamp("last_login"),
 });
 
 export const llmModels = pgTable("llm_models", {
@@ -62,6 +65,7 @@ export const testCases = pgTable("test_cases", {
 
 export const evaluations = pgTable("evaluations", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
   modelId: text("model_id").notNull(),
   testSuiteId: integer("test_suite_id").references(() => testSuites.id),
   status: text("status").notNull(), // 'pending', 'running', 'completed', 'failed'
@@ -90,8 +94,10 @@ export const evaluationResults = pgTable("evaluation_results", {
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
+  email: true,
   username: true,
-  password: true,
+}).extend({
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export const insertLlmModelSchema = createInsertSchema(llmModels).omit({
