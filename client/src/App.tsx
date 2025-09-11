@@ -6,12 +6,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Dashboard from "@/pages/dashboard";
 import Results from "@/pages/results";
 import RegionalGuardrails from "@/pages/regional-guardrails";
+import Login from "@/pages/login";
+import Register from "@/pages/register";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       <Route path="/results" component={Results} />
       <Route path="/regional-guardrails" component={RegionalGuardrails} />
       <Route component={NotFound} />

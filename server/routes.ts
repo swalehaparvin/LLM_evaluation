@@ -13,8 +13,18 @@ import { memoryService } from "./services/memory";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-// JWT secret - in production use environment variable
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
+// JWT secret - required from environment variable
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// Reject server start if JWT_SECRET is not set in production
+if (!JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable is required in production');
+  }
+  console.warn('WARNING: Using default JWT secret for development. Set JWT_SECRET environment variable.');
+}
+
+const JWT_SECRET_VALUE = JWT_SECRET || 'dev-secret-only-for-local-development';
 
 // Extend Express Request type to include user
 declare global {
@@ -65,7 +75,7 @@ function authenticateToken(req: Request, res: Response, next: NextFunction) {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: number; email: string };
+    const decoded = jwt.verify(token, JWT_SECRET_VALUE) as { id: number; email: string };
     req.user = decoded;
     next();
   } catch (error) {
@@ -87,7 +97,8 @@ export async function registerRoutes(app: Express): Promise<void> {
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
-        return res.status(400).json({ error: "Email already registered" });
+        // Generic error to prevent user enumeration
+        return res.status(400).json({ error: "Registration failed" });
       }
 
       // Hash password
@@ -103,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       // Generate JWT token
       const token = jwt.sign(
         { id: user.id, email: user.email },
-        JWT_SECRET,
+        JWT_SECRET_VALUE,
         { expiresIn: '7d' }
       );
 
@@ -142,7 +153,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       // Generate JWT token
       const token = jwt.sign(
         { id: user.id, email: user.email },
-        JWT_SECRET,
+        JWT_SECRET_VALUE,
         { expiresIn: '7d' }
       );
 
@@ -394,20 +405,22 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   // Evaluation results endpoint with pagination
-  app.get('/api/evaluation-results', async (req, res) => {
+  app.get('/api/evaluation-results', authenticateToken, async (req, res) => {
     try {
       const page = req.query.page ? parseInt(req.query.page as string) : 1;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
       const offset = (page - 1) * limit;
+      const userId = req.user!.id;
       
-      // Get total count for pagination info
-      const totalCount = await storage.getTotalEvaluationResultsCount();
+      // Get total count for pagination info (filtered by userId)
+      const totalCount = await storage.getTotalEvaluationResultsCountByUserId(userId);
       const totalPages = Math.ceil(totalCount / limit);
       
-      // Get paginated results
+      // Get paginated results (filtered by userId)
       const results = await storage.getEvaluationResultsPaginated({
         offset,
         limit,
+        userId,
         model: req.query.model as string,
         testType: req.query.testType as string,
         status: req.query.status as string,
@@ -463,13 +476,19 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   // Start evaluation process
-  app.post('/api/evaluations/:id/start', async (req, res) => {
+  app.post('/api/evaluations/:id/start', authenticateToken, async (req, res) => {
     try {
       const evaluationId = parseInt(req.params.id);
+      const userId = req.user!.id;
       const evaluation = await storage.getEvaluationById(evaluationId);
 
       if (!evaluation) {
         return res.status(404).json({ error: 'Evaluation not found' });
+      }
+
+      // Verify the evaluation belongs to the authenticated user
+      if (evaluation.userId !== userId) {
+        return res.status(403).json({ error: 'Access denied' });
       }
 
       await storage.updateEvaluationStatus(evaluationId, 'running');
@@ -509,22 +528,40 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  app.get('/api/evaluations/:id', async (req, res) => {
+  app.get('/api/evaluations/:id', authenticateToken, async (req, res) => {
     try {
       const evaluationId = parseInt(req.params.id);
+      const userId = req.user!.id;
       const evaluation = await storage.getEvaluationById(evaluationId);
       if (!evaluation) {
         return res.status(404).json({ error: 'Evaluation not found' });
       }
+      
+      // Verify the evaluation belongs to the authenticated user
+      if (evaluation.userId !== userId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      
       res.json(evaluation);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch evaluation' });
     }
   });
 
-  app.get('/api/evaluations/:id/progress', async (req, res) => {
+  app.get('/api/evaluations/:id/progress', authenticateToken, async (req, res) => {
     try {
       const evaluationId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      
+      // Verify the evaluation belongs to the authenticated user
+      const evaluation = await storage.getEvaluationById(evaluationId);
+      if (!evaluation) {
+        return res.status(404).json({ error: 'Evaluation not found' });
+      }
+      if (evaluation.userId !== userId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      
       res.json({
         evaluationId,
         totalTests: 10,
@@ -537,9 +574,20 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  app.get('/api/evaluations/:id/results', async (req, res) => {
+  app.get('/api/evaluations/:id/results', authenticateToken, async (req, res) => {
     try {
       const evaluationId = parseInt(req.params.id);
+      const userId = req.user!.id;
+      
+      // Verify the evaluation belongs to the authenticated user
+      const evaluation = await storage.getEvaluationById(evaluationId);
+      if (!evaluation) {
+        return res.status(404).json({ error: 'Evaluation not found' });
+      }
+      if (evaluation.userId !== userId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      
       const results = await storage.getEvaluationResultsByEvaluationId(evaluationId);
       res.json(results);
     } catch (error) {
@@ -548,7 +596,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   // Gemini evaluation endpoint with memory integration
-  app.post("/api/gemini-evaluate", async (req, res) => {
+  app.post("/api/gemini-evaluate", authenticateToken, async (req, res) => {
     const { prompt, temperature = 0.1, maxOutputTokens = 512, userId = "default" } = req.body;
 
     if (!process.env.GEMINI_API_KEY) {

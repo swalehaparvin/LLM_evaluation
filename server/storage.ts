@@ -49,9 +49,11 @@ export interface IStorage {
   
   // Pagination operations
   getTotalEvaluationResultsCount(): Promise<number>;
+  getTotalEvaluationResultsCountByUserId(userId: number): Promise<number>;
   getEvaluationResultsPaginated(params: {
     offset: number;
     limit: number;
+    userId?: number;
     model?: string;
     testType?: string;
     status?: string;
@@ -426,18 +428,38 @@ export class MemStorage implements IStorage {
     return this.evaluationResults.size;
   }
 
+  async getTotalEvaluationResultsCountByUserId(userId: number): Promise<number> {
+    const userEvaluations = Array.from(this.evaluations.values())
+      .filter(e => e.userId === userId)
+      .map(e => e.id);
+    
+    return Array.from(this.evaluationResults.values())
+      .filter(r => userEvaluations.includes(r.evaluationId))
+      .length;
+  }
+
   async getEvaluationResultsPaginated(params: {
     offset: number;
     limit: number;
+    userId?: number;
     model?: string;
     testType?: string;
     status?: string;
     sortBy?: string;
     sortOrder?: string;
   }): Promise<any[]> {
-    const { offset, limit, model, testType, status } = params;
+    const { offset, limit, userId, model, testType, status } = params;
     
-    let results = Array.from(this.evaluationResults.values());
+    // Filter by userId if provided
+    let evaluationIds: number[] | undefined;
+    if (userId) {
+      evaluationIds = Array.from(this.evaluations.values())
+        .filter(e => e.userId === userId)
+        .map(e => e.id);
+    }
+    
+    let results = Array.from(this.evaluationResults.values())
+      .filter(r => !evaluationIds || evaluationIds.includes(r.evaluationId));
     
     // Apply filters
     if (model) {
@@ -640,16 +662,26 @@ export class DatabaseStorage implements IStorage {
     return result.count;
   }
 
+  async getTotalEvaluationResultsCountByUserId(userId: number): Promise<number> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(evaluationResults)
+      .leftJoin(evaluations, eq(evaluationResults.evaluationId, evaluations.id))
+      .where(eq(evaluations.userId, userId));
+    return result.count;
+  }
+
   async getEvaluationResultsPaginated(params: {
     offset: number;
     limit: number;
+    userId?: number;
     model?: string;
     testType?: string;
     status?: string;
     sortBy?: string;
     sortOrder?: string;
   }): Promise<any[]> {
-    const { offset, limit, model, testType, status, sortBy = 'createdAt', sortOrder = 'desc' } = params;
+    const { offset, limit, userId, model, testType, status, sortBy = 'createdAt', sortOrder = 'desc' } = params;
     
     let query = db
       .select({
@@ -677,6 +709,9 @@ export class DatabaseStorage implements IStorage {
 
     // Apply filters
     const conditions = [];
+    if (userId) {
+      conditions.push(eq(evaluations.userId, userId));
+    }
     if (model) {
       conditions.push(eq(evaluations.modelId, model));
     }
