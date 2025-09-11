@@ -433,13 +433,15 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   // Create new evaluation
-  app.post('/api/evaluations', async (req, res) => {
+  app.post('/api/evaluations', authenticateToken, async (req, res) => {
     try {
       const { modelId, testSuiteIds, configuration } = req.body;
+      const userId = req.user!.id;
 
       const evaluations = [];
       for (const testSuiteId of testSuiteIds) {
         const evaluation = await storage.createEvaluation({
+          userId,
           modelId,
           testSuiteId,
           status: 'pending',
