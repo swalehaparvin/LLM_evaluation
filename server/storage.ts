@@ -9,8 +9,10 @@ import { desc } from "drizzle-orm";
 export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(user: { email: string; username?: string | null; passwordHash: string }): Promise<User>;
+  verifyUserPassword(email: string, password: string): Promise<User | null>;
 
   // LLM Model operations
   getAllModels(): Promise<LlmModel[]>;
@@ -30,10 +32,12 @@ export interface IStorage {
   createTestCase(testCase: InsertTestCase): Promise<TestCase>;
 
   // Evaluation operations
-  createEvaluation(evaluation: InsertEvaluation): Promise<Evaluation>;
+  createEvaluation(evaluation: InsertEvaluation & { userId?: number }): Promise<Evaluation>;
   getEvaluationById(id: number): Promise<Evaluation | undefined>;
   getEvaluationsByModelId(modelId: string): Promise<Evaluation[]>;
+  getEvaluationsByUserId(userId: number): Promise<Evaluation[]>;
   getRecentEvaluations(limit?: number): Promise<Evaluation[]>;
+  getRecentEvaluationsByUserId(userId: number, limit?: number): Promise<Evaluation[]>;
   updateEvaluationStatus(id: number, status: string, completedAt?: Date): Promise<void>;
   updateEvaluationScore(id: number, overallScore: number): Promise<void>;
 
@@ -177,15 +181,36 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
+  }
+
   async getUserByUsername(username: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(user => user.username === username);
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(userData: { email: string; username?: string | null; passwordHash: string }): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      id,
+      email: userData.email,
+      username: userData.username || null,
+      passwordHash: userData.passwordHash,
+      createdAt: new Date(),
+      lastLogin: null
+    };
     this.users.set(id, user);
     return user;
+  }
+
+  async verifyUserPassword(email: string, password: string): Promise<User | null> {
+    const user = await this.getUserByEmail(email);
+    if (!user) return null;
+    // In production, use bcrypt.compare here
+    // For MemStorage, we'll do a simple comparison for now
+    const bcrypt = await import('bcryptjs');
+    const isValid = await bcrypt.compare(password, user.passwordHash);
+    return isValid ? user : null;
   }
 
   // LLM Model operations
@@ -275,10 +300,11 @@ export class MemStorage implements IStorage {
   }
 
   // Evaluation operations
-  async createEvaluation(insertEvaluation: InsertEvaluation): Promise<Evaluation> {
+  async createEvaluation(insertEvaluation: InsertEvaluation & { userId?: number }): Promise<Evaluation> {
     const id = this.currentEvaluationId++;
     const evaluation: Evaluation = {
       id,
+      userId: insertEvaluation.userId ?? null,
       status: insertEvaluation.status,
       modelId: insertEvaluation.modelId,
       testSuiteId: insertEvaluation.testSuiteId ?? null,
@@ -297,6 +323,19 @@ export class MemStorage implements IStorage {
 
   async getEvaluationsByModelId(modelId: string): Promise<Evaluation[]> {
     return Array.from(this.evaluations.values()).filter(evaluation => evaluation.modelId === modelId);
+  }
+
+  async getEvaluationsByUserId(userId: number): Promise<Evaluation[]> {
+    return Array.from(this.evaluations.values())
+      .filter(evaluation => evaluation.userId === userId)
+      .sort((a, b) => b.startedAt!.getTime() - a.startedAt!.getTime());
+  }
+
+  async getRecentEvaluationsByUserId(userId: number, limit: number = 10): Promise<Evaluation[]> {
+    return Array.from(this.evaluations.values())
+      .filter(evaluation => evaluation.userId === userId)
+      .sort((a, b) => b.startedAt!.getTime() - a.startedAt!.getTime())
+      .slice(0, limit);
   }
 
   async getRecentEvaluations(limit: number = 100): Promise<Evaluation[]> {
