@@ -101,7 +101,9 @@ export class MemStorage implements IStorage {
       { modelId: "gpt-4o", provider: "openai", name: "GPT-4o", description: "Latest OpenAI model" },
       { modelId: "gpt-3.5-turbo", provider: "openai", name: "GPT-3.5 Turbo", description: "OpenAI GPT-3.5 Turbo" },
       { modelId: "claude-sonnet-4-20250514", provider: "anthropic", name: "Claude Sonnet 4", description: "Latest Anthropic model" },
-      { modelId: "claude-3-haiku-20240307", provider: "anthropic", name: "Claude 3 Haiku", description: "Anthropic Claude 3 Haiku" }
+      { modelId: "claude-3-haiku-20240307", provider: "anthropic", name: "Claude 3 Haiku", description: "Anthropic Claude 3 Haiku" },
+      { modelId: "deepseek-chat", provider: "deepseek", name: "DeepSeek Chat", description: "DeepSeek Chat model - optimized for dialogue" },
+      { modelId: "deepseek-coder", provider: "deepseek", name: "DeepSeek Coder", description: "DeepSeek Coder model - specialized for code generation" }
     ];
 
     defaultModels.forEach(model => {
