@@ -129,7 +129,7 @@ export class DeepSeekProvider implements LLMProvider {
   constructor(modelId: string = DEEPSEEK_DEFAULT_MODEL) {
     // DeepSeek uses OpenAI-compatible API with a different base URL
     this.client = new OpenAI({
-      apiKey: process.env.DEEPSEEK_API_KEY || 'sk-0f67fc9298274a24bea5e9d443abc853',
+      apiKey: process.env.DEEPSEEK_API_KEY,
       baseURL: 'https://api.deepseek.com/v1',
     });
     this.modelId = modelId;
