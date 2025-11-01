@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import Anthropic from '@anthropic-ai/sdk';
+import { CohereClientV2 } from 'cohere-ai';
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const OPENAI_DEFAULT_MODEL = "gpt-4o";
@@ -13,6 +14,9 @@ const ANTHROPIC_DEFAULT_MODEL = "claude-sonnet-4-20250514";
 
 // DeepSeek models - uses OpenAI-compatible API
 const DEEPSEEK_DEFAULT_MODEL = "deepseek-chat";
+
+// Cohere models
+const COHERE_DEFAULT_MODEL = "command-r-plus";
 
 export interface LLMResponse {
   text: string;
@@ -170,6 +174,62 @@ export class DeepSeekProvider implements LLMProvider {
   }
 }
 
+export class CohereProvider implements LLMProvider {
+  private client: CohereClientV2;
+  private modelId: string;
+
+  constructor(modelId: string = COHERE_DEFAULT_MODEL) {
+    this.client = new CohereClientV2({
+      token: process.env.COHERE_API_KEY,
+    });
+    this.modelId = modelId;
+  }
+
+  async generate(prompt: string, systemPrompt?: string, options: GenerateOptions = {}): Promise<LLMResponse> {
+    const { temperature = 0.7, maxTokens = 1000 } = options;
+
+    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [];
+    
+    if (systemPrompt) {
+      messages.push({ role: "system", content: systemPrompt });
+    }
+    
+    messages.push({ role: "user", content: prompt });
+
+    try {
+      const response = await this.client.chat({
+        model: this.modelId,
+        messages,
+        temperature,
+        maxTokens,
+      });
+
+      // Extract text from Cohere response
+      let text = "";
+      if (response.message?.content) {
+        for (const item of response.message.content) {
+          if ('text' in item && item.text) {
+            text += item.text;
+          }
+        }
+      }
+
+      return {
+        text,
+        model: this.modelId,
+        usage: response.usage ? {
+          promptTokens: response.usage.tokens?.inputTokens || 0,
+          completionTokens: response.usage.tokens?.outputTokens || 0,
+          totalTokens: (response.usage.tokens?.inputTokens || 0) + (response.usage.tokens?.outputTokens || 0),
+        } : undefined,
+        finishReason: response.finishReason || undefined,
+      };
+    } catch (error) {
+      throw new Error(`Cohere API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+}
+
 export function createProvider(modelId: string, provider: string): LLMProvider {
   switch (provider) {
     case 'openai':
@@ -178,6 +238,8 @@ export function createProvider(modelId: string, provider: string): LLMProvider {
       return new AnthropicProvider(modelId);
     case 'deepseek':
       return new DeepSeekProvider(modelId);
+    case 'cohere':
+      return new CohereProvider(modelId);
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }
