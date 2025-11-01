@@ -49,6 +49,7 @@ Authenticated user logs in via email, initiates evaluation (linked to their user
 - **OpenAI**: GPT models
 - **Anthropic**: Claude models
 - **Google**: Gemini models
+- **DeepSeek**: DeepSeek Chat and DeepSeek Coder models (OpenAI-compatible API)
 
 ### Database
 - **PostgreSQL**: Primary data storage via Neon serverless
