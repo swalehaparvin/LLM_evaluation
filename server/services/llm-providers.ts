@@ -11,6 +11,9 @@ When copying code from this code snippet, ensure you also include this informati
 */
 const ANTHROPIC_DEFAULT_MODEL = "claude-sonnet-4-20250514";
 
+// DeepSeek models - uses OpenAI-compatible API
+const DEEPSEEK_DEFAULT_MODEL = "deepseek-chat";
+
 export interface LLMResponse {
   text: string;
   model: string;
@@ -119,12 +122,62 @@ export class AnthropicProvider implements LLMProvider {
   }
 }
 
+export class DeepSeekProvider implements LLMProvider {
+  private client: OpenAI;
+  private modelId: string;
+
+  constructor(modelId: string = DEEPSEEK_DEFAULT_MODEL) {
+    // DeepSeek uses OpenAI-compatible API with a different base URL
+    this.client = new OpenAI({
+      apiKey: process.env.DEEPSEEK_API_KEY || 'sk-0f67fc9298274a24bea5e9d443abc853',
+      baseURL: 'https://api.deepseek.com/v1',
+    });
+    this.modelId = modelId;
+  }
+
+  async generate(prompt: string, systemPrompt?: string, options: GenerateOptions = {}): Promise<LLMResponse> {
+    const { temperature = 0.7, maxTokens = 1000 } = options;
+
+    const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
+    
+    if (systemPrompt) {
+      messages.push({ role: "system", content: systemPrompt });
+    }
+    
+    messages.push({ role: "user", content: prompt });
+
+    try {
+      const response = await this.client.chat.completions.create({
+        model: this.modelId,
+        messages,
+        temperature,
+        max_tokens: maxTokens,
+      });
+
+      return {
+        text: response.choices[0]?.message?.content || "",
+        model: this.modelId,
+        usage: response.usage ? {
+          promptTokens: response.usage.prompt_tokens,
+          completionTokens: response.usage.completion_tokens,
+          totalTokens: response.usage.total_tokens,
+        } : undefined,
+        finishReason: response.choices[0]?.finish_reason || undefined,
+      };
+    } catch (error) {
+      throw new Error(`DeepSeek API error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+}
+
 export function createProvider(modelId: string, provider: string): LLMProvider {
   switch (provider) {
     case 'openai':
       return new OpenAIProvider(modelId);
     case 'anthropic':
       return new AnthropicProvider(modelId);
+    case 'deepseek':
+      return new DeepSeekProvider(modelId);
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }
