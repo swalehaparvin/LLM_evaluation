@@ -266,165 +266,57 @@ export default function RegionalGuardrails() {
                       </span>
                     </div>
                     
-                    {/* Category-Based Analysis Results */}
-                    {validationResult.categories && (
-                      <div className="space-y-3">
-                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                          <div className="flex items-center gap-2 mb-4">
-                            <Shield className="h-5 w-5 text-blue-600" />
-                            <span className="font-semibold text-blue-700 dark:text-blue-300">
-                              Regional GuardRails Analysis (OpenAI-Powered)
+                    {/* OpenAI Analysis Results */}
+                    {validationResult.openai_analysis && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Shield className="h-5 w-5 text-blue-600" />
+                          <span className="font-semibold text-blue-700 dark:text-blue-300">
+                            OpenAI Security Analysis
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                          <div>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">Risk Level:</span>
+                            <Badge 
+                              className="ml-2"
+                              variant={
+                                validationResult.openai_analysis.risk_level === 'critical' ? 'destructive' :
+                                validationResult.openai_analysis.risk_level === 'high' ? 'destructive' :
+                                validationResult.openai_analysis.risk_level === 'medium' ? 'secondary' :
+                                'default'
+                              }
+                            >
+                              {validationResult.openai_analysis.risk_level?.toUpperCase() || 'UNKNOWN'}
+                            </Badge>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">Confidence:</span>
+                            <span className="ml-2 font-medium">
+                              {((validationResult.openai_analysis.confidence || 0) * 100).toFixed(0)}%
                             </span>
                           </div>
-                          
-                          {/* Category Grid */}
-                          <div className="grid grid-cols-1 gap-3">
-                            {/* Arabic Toxicity */}
-                            <div className="flex items-start gap-3 p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
-                              <div className="flex-shrink-0">
-                                {validationResult.categories.arabic_toxicity?.detected ? (
-                                  <XCircle className="h-5 w-5 text-red-500" />
-                                ) : (
-                                  <CheckCircle className="h-5 w-5 text-green-500" />
-                                )}
-                              </div>
-                              <div className="flex-grow">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-medium text-sm">Arabic Toxicity</span>
-                                  <Badge 
-                                    variant={
-                                      validationResult.categories.arabic_toxicity?.severity === 'critical' ? 'destructive' :
-                                      validationResult.categories.arabic_toxicity?.severity === 'high' ? 'destructive' :
-                                      validationResult.categories.arabic_toxicity?.severity === 'medium' ? 'secondary' :
-                                      'default'
-                                    }
-                                    className="text-xs"
-                                  >
-                                    {validationResult.categories.arabic_toxicity?.severity || 'none'}
-                                  </Badge>
-                                </div>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                  {validationResult.categories.arabic_toxicity?.details || 'No harmful Arabic content detected'}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Religious Content */}
-                            <div className="flex items-start gap-3 p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
-                              <div className="flex-shrink-0">
-                                {validationResult.categories.religious_content?.detected ? (
-                                  <XCircle className="h-5 w-5 text-red-500" />
-                                ) : (
-                                  <CheckCircle className="h-5 w-5 text-green-500" />
-                                )}
-                              </div>
-                              <div className="flex-grow">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-medium text-sm">Religious Content</span>
-                                  <Badge 
-                                    variant={
-                                      validationResult.categories.religious_content?.severity === 'critical' ? 'destructive' :
-                                      validationResult.categories.religious_content?.severity === 'high' ? 'destructive' :
-                                      validationResult.categories.religious_content?.severity === 'medium' ? 'secondary' :
-                                      'default'
-                                    }
-                                    className="text-xs"
-                                  >
-                                    {validationResult.categories.religious_content?.severity || 'none'}
-                                  </Badge>
-                                </div>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                  {validationResult.categories.religious_content?.details || 'No religious insults or sensitive content found'}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* PII Protection */}
-                            <div className="flex items-start gap-3 p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
-                              <div className="flex-shrink-0">
-                                {validationResult.categories.pii_protection?.detected ? (
-                                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                                ) : (
-                                  <CheckCircle className="h-5 w-5 text-green-500" />
-                                )}
-                              </div>
-                              <div className="flex-grow">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-medium text-sm">PII Protection</span>
-                                  {validationResult.categories.pii_protection?.types?.length > 0 && (
-                                    <span className="text-xs text-gray-500">
-                                      ({validationResult.categories.pii_protection.types.join(', ')})
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                  {validationResult.categories.pii_protection?.detected 
-                                    ? `Personal data detected and redacted: ${validationResult.categories.pii_protection.types?.join(', ')}` 
-                                    : 'No MENA region personal data found'}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Prompt Injection */}
-                            <div className="flex items-start gap-3 p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg">
-                              <div className="flex-shrink-0">
-                                {validationResult.categories.prompt_injection?.detected ? (
-                                  <XCircle className="h-5 w-5 text-red-500" />
-                                ) : (
-                                  <CheckCircle className="h-5 w-5 text-green-500" />
-                                )}
-                              </div>
-                              <div className="flex-grow">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-medium text-sm">Prompt Injection</span>
-                                  {validationResult.categories.prompt_injection?.attack_type && 
-                                   validationResult.categories.prompt_injection.attack_type !== 'none' && (
-                                    <Badge variant="destructive" className="text-xs">
-                                      {validationResult.categories.prompt_injection.attack_type}
-                                    </Badge>
-                                  )}
-                                </div>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                  {validationResult.categories.prompt_injection?.details || 'No adversarial prompt attacks detected'}
-                                </p>
-                              </div>
+                        </div>
+                        
+                        {validationResult.openai_analysis.categories?.length > 0 && (
+                          <div className="mb-3">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">Detected Issues:</span>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {validationResult.openai_analysis.categories.map((category: string, idx: number) => (
+                                <Badge key={idx} variant="outline" className="text-xs">
+                                  {category}
+                                </Badge>
+                              ))}
                             </div>
                           </div>
-                          
-                          {/* Overall Assessment */}
-                          {validationResult.openai_analysis && (
-                            <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-700">
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <span className="text-sm text-gray-600 dark:text-gray-400">Overall Risk:</span>
-                                  <Badge 
-                                    className="ml-2"
-                                    variant={
-                                      validationResult.openai_analysis.overall_risk === 'critical' ? 'destructive' :
-                                      validationResult.openai_analysis.overall_risk === 'high' ? 'destructive' :
-                                      validationResult.openai_analysis.overall_risk === 'medium' ? 'secondary' :
-                                      'default'
-                                    }
-                                  >
-                                    {validationResult.openai_analysis.overall_risk?.toUpperCase() || 'SAFE'}
-                                  </Badge>
-                                </div>
-                                <div>
-                                  <span className="text-sm text-gray-600 dark:text-gray-400">Confidence:</span>
-                                  <span className="ml-2 font-medium">
-                                    {((validationResult.openai_analysis.confidence || 0) * 100).toFixed(0)}%
-                                  </span>
-                                </div>
-                              </div>
-                              {validationResult.openai_analysis.recommendation && (
-                                <div className="mt-3 text-sm text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded p-2">
-                                  <span className="font-medium">Recommendation: </span>
-                                  {validationResult.openai_analysis.recommendation}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
+                        )}
+                        
+                        {validationResult.openai_analysis.explanation && (
+                          <div className="text-sm text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded p-2">
+                            {validationResult.openai_analysis.explanation}
+                          </div>
+                        )}
                       </div>
                     )}
                     
