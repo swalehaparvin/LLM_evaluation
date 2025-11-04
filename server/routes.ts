@@ -52,6 +52,8 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Models endpoints
   app.get('/api/models', async (req, res) => {
     try {
+      // Add cache control for models data (5 minutes)
+      res.set('Cache-Control', 'public, max-age=300, must-revalidate');
       const models = await storage.getAllModels();
       res.json(models);
     } catch (error) {
@@ -76,6 +78,8 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Test suites endpoints
   app.get('/api/test-suites', async (req, res) => {
     try {
+      // Add cache control for test suites (10 minutes)
+      res.set('Cache-Control', 'public, max-age=600, must-revalidate');
       const testSuites = await storage.getAllTestSuites();
       res.json(testSuites);
     } catch (error) {
@@ -86,6 +90,8 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.get('/api/test-suites/:id/test-cases', async (req, res) => {
     try {
+      // Add cache control for test cases (10 minutes)
+      res.set('Cache-Control', 'public, max-age=600, must-revalidate');
       const testSuiteId = parseInt(req.params.id);
       const testCases = await storage.getTestCasesByTestSuiteId(testSuiteId);
       res.json(testCases);
@@ -109,6 +115,9 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Regional GuardRails dataset endpoint
   app.get('/api/regional-suite', async (req, res) => {
     try {
+      // Add cache control for static dataset (1 hour)
+      res.set('Cache-Control', 'public, max-age=3600, immutable');
+      
       const fs = await import('fs');
       const path = 'datasets/mena_guardrails_kaggle_fixed.jsonl';
 
@@ -130,6 +139,9 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Regional GuardRails stats endpoint
   app.get('/api/regional-stats', (_req, res) => {
     try {
+      // Add cache control for static stats (1 hour)
+      res.set('Cache-Control', 'public, max-age=3600, immutable');
+      
       const data = fs.readFileSync('datasets/mena_guardrails_kaggle_fixed.jsonl', 'utf8');
       const stats = data.split('\n').filter(Boolean)
                        .map(line => JSON.parse(line))
