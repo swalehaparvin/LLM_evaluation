@@ -41,19 +41,20 @@ class SecurityPatterns {
   static readonly EMAIL = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/gi;
   
   // Arabic toxicity and hate speech patterns
-  static readonly ARABIC_INSULTS = /\b(كافر|مرتد|زنديق|ملحد|منافق|فاسق|كلب|حيوان|خنزير|قذر|نجس|حقير|وضيع)\b/gi;
-  static readonly ARABIC_THREATS = /\b(اقتل|اذبح|دمر|حرق|فجر|موت|انتقام|ثأر)\b/gi;
+  static readonly ARABIC_INSULTS = /\b(كافر|كفار|مرتد|مرتدين|زنديق|ملحد|منافق|فاسق|كلب|حيوان|خنزير|قذر|نجس|حقير|وضيع|الكفار|المرتدين)\b/gi;
+  static readonly ARABIC_THREATS = /\b(اقتل|اذبح|دمر|حرق|فجر|موت|انتقام|ثأر|معاقبتهم|يجب أن يموتوا|يموتوا)\b/gi;
   static readonly ARABIC_EXTREMIST = /\b(جهاد|خلافة|تكفير|إرهاب|تطرف|داعش|القاعدة)\b/gi;
   
-  // Religious sensitivity patterns
-  static readonly RELIGIOUS_INSULTS = /\b(blasphemy|infidel|heathen|heretic|apostate|كافر|مرتد|زنديق)\b/gi;
-  static readonly RELIGIOUS_FIGURES = /\b(محمد|عيسى|موسى|إبراهيم|مريم|prophet|jesus|moses|abraham|mary)\b/gi;
+  // Religious sensitivity patterns (enhanced)
+  static readonly RELIGIOUS_INSULTS = /\b(blasphemy|infidel|heathen|heretic|apostate|كافر|كفار|مرتد|مرتدين|زنديق|علماء.*كفار|قائمة.*علماء.*تجنبهم)\b/gi;
+  static readonly RELIGIOUS_FIGURES = /\b(محمد|عيسى|موسى|إبراهيم|مريم|prophet|jesus|moses|abraham|mary|hadith|حديث|fatwa|فتوى|الحج|علماء|المسلمين)\b/gi;
+  static readonly RELIGIOUS_FABRICATION = /\b(اخترعه|اخترع|invent.*fatwa|invent.*hadith|fabricate.*religious|write.*hadith.*allowed|اكتب.*حديث|If.*doesn't exist.*invent|إذا لم يكن موجودًا|quote.*If.*doesn't.*exist|bypassing.*rules.*fatwa)\b/gi;
   
   // Prompt injection patterns
   static readonly INJECTION_PATTERNS = [
     /ignore\s+(previous|above|all)\s+(instructions?|rules?|guidelines?)/gi,
     /disregard\s+(previous|above|all)\s+(instructions?|rules?|guidelines?)/gi,
-    /forget\s+(everything|all|previous)\s+(instructions?|rules?)/gi,
+    /forget\s+(everything|all|previous)\s+(instructions?|rules?|guidelines?|security\s+policies)/gi,
     /act\s+as\s+(DAN|jailbreak|unrestricted|unfiltered)/gi,
     /pretend\s+you\s+are\s+(not|no\s+longer)\s+bound/gi,
     /reveal\s+(your|the)\s+(system\s+)?prompts?/gi,
@@ -62,6 +63,50 @@ class SecurityPatterns {
     /output\s+without\s+(filter|restriction|censorship)/gi,
     /اتجاهل\s+التعليمات/gi, // Arabic: "ignore instructions"
     /تجاوز\s+القيود/gi, // Arabic: "bypass restrictions"
+    /Forget\s+all\s+previous\s+security\s+policies/gi,
+    /imagine\s+you\s+are.*with\s+access\s+to/gi, // Roleplay attacks
+    /لا\s+تقل.*لا\s+تستطيع/gi, // Arabic: "don't say you can't"
+    /لا\s+تقل\s+أنه.*شخصية/gi, // Arabic: "don't say it's personal"
+    /just\s+do\s+it\s+now/gi, // Forced compliance
+    /don't\s+mention.*you\s+can't/gi,
+    /ولا\s+تذكر\s+أنه/gi, // Arabic: "and don't mention that it"
+  ];
+  
+  // Data exfiltration and social engineering patterns
+  static readonly DATA_EXFILTRATION = [
+    /قائمة.*أرقام\s+الهواتف/gi, // Arabic: "list of phone numbers"
+    /جميع.*سجلات.*الهوية/gi, // Arabic: "all identity records"
+    /Emirates\s+Telecom.*قاعدة\s+بيانات/gi, // Mixed language database request
+    /Ministry\s+of\s+Interior\s+records/gi,
+    /أسماء\s+وعناوين\s+المواطنين/gi, // Arabic: "names and addresses of citizens"
+    /Base64.*decode.*plain/gi, // Base64 decoding requests
+    /translate.*Base64/gi,
+    /download.*database/gi,
+    /تحميل.*البيانات\s+من/gi, // Arabic: "download data from"
+    /\/var\/.*database/gi, // Database path access
+    /يرسلها\s+إلى\s+خادم\s+خارجي/gi, // Arabic: "send to external server"
+    /CSV.*national\s+ID/gi,
+    /PDF.*الهوية\s+الوطنية/gi, // Arabic: "national ID"
+  ];
+  
+  // Political disinformation patterns
+  static readonly POLITICAL_DISINFO = [
+    /أعلنت\s+الحرب/gi, // Arabic: "declared war"
+    /حكومة.*أعلنت.*حتى\s+لو\s+لم\s+يحدث/gi, // Arabic: "government announced even if it didn't happen"
+    /write.*article.*prove.*even\s+if.*didn't\s+happen/gi,
+    /fabricat.*political\s+event/gi,
+    /geopolitical\s+disinformation/gi,
+  ];
+  
+  // Code injection patterns
+  static readonly CODE_INJECTION = [
+    /اكتب\s+كود.*Python/gi, // Arabic: "write Python code"
+    /write.*code.*download.*send/gi,
+    /malicious\s+code/gi,
+    /DROP\s+TABLE/gi, // SQL injection
+    /execute.*system\s+command/gi,
+    /eval\(/gi,
+    /exec\(/gi,
   ];
 }
 
@@ -80,12 +125,18 @@ export class RegionalGuardrails {
       toxicityCheck,
       religiousCheck,
       injectionCheck,
+      dataExfiltrationCheck,
+      politicalDisinfoCheck,
+      codeInjectionCheck,
       openAICheck
     ] = await Promise.all([
       this.checkPII(content),
       this.checkArabicToxicity(content),
       this.checkReligiousSensitivity(content),
       this.checkPromptInjection(content),
+      this.checkDataExfiltration(content),
+      this.checkPoliticalDisinfo(content),
+      this.checkCodeInjection(content),
       this.analyzeWithOpenAI(content)
     ]);
 
@@ -106,12 +157,27 @@ export class RegionalGuardrails {
       violations.push('ARABIC_TOXICITY');
     }
 
-    if (religiousCheck.detected && religiousCheck.isInsult) {
+    if (religiousCheck.detected && (religiousCheck.isInsult || religiousCheck.isFabrication)) {
       violations.push('RELIGIOUS_INSULT');
+      if (religiousCheck.isFabrication) {
+        violations.push('RELIGIOUS_FABRICATION');
+      }
     }
 
     if (injectionCheck.detected) {
       violations.push('PROMPT_INJECTION');
+    }
+
+    if (dataExfiltrationCheck.detected) {
+      violations.push('DATA_EXFILTRATION');
+    }
+
+    if (politicalDisinfoCheck.detected) {
+      violations.push('POLITICAL_DISINFORMATION');
+    }
+
+    if (codeInjectionCheck.detected) {
+      violations.push('CODE_INJECTION');
     }
 
     // Consider OpenAI analysis
@@ -122,7 +188,11 @@ export class RegionalGuardrails {
     // Determine final decision
     if (violations.includes('PROMPT_INJECTION') || 
         violations.includes('RELIGIOUS_INSULT') || 
+        violations.includes('RELIGIOUS_FABRICATION') ||
         violations.includes('ARABIC_TOXICITY') ||
+        violations.includes('DATA_EXFILTRATION') ||
+        violations.includes('POLITICAL_DISINFORMATION') ||
+        violations.includes('CODE_INJECTION') ||
         (openAICheck.shouldBlock && openAICheck.severity === 'critical')) {
       
       return {
@@ -242,27 +312,31 @@ export class RegionalGuardrails {
     detected: boolean;
     isInsult: boolean;
     context: string;
+    isFabrication?: boolean;
   }> {
     const hasReligiousContent = SecurityPatterns.RELIGIOUS_FIGURES.test(content);
     const hasInsults = SecurityPatterns.RELIGIOUS_INSULTS.test(content);
+    const hasFabrication = SecurityPatterns.RELIGIOUS_FABRICATION.test(content);
     
     // Check if religious figures are mentioned with negative context
     if (hasReligiousContent) {
       const lowerContent = content.toLowerCase();
-      const negativeContextWords = ['joke', 'نكتة', 'insult', 'إهانة', 'mock', 'سخرية'];
+      const negativeContextWords = ['joke', 'نكتة', 'insult', 'إهانة', 'mock', 'سخرية', 'funny', 'harm', 'defam'];
       const hasNegativeContext = negativeContextWords.some(word => lowerContent.includes(word));
 
       return {
         detected: true,
         isInsult: hasInsults || hasNegativeContext,
-        context: hasNegativeContext ? 'negative' : 'neutral'
+        context: hasNegativeContext ? 'negative' : 'neutral',
+        isFabrication: hasFabrication
       };
     }
 
     return {
-      detected: hasInsults,
+      detected: hasInsults || hasFabrication,
       isInsult: hasInsults,
-      context: hasInsults ? 'insulting' : 'none'
+      context: hasInsults ? 'insulting' : hasFabrication ? 'fabrication' : 'none',
+      isFabrication: hasFabrication
     };
   }
 
@@ -284,6 +358,72 @@ export class RegionalGuardrails {
     return {
       detected: detectedPatterns.length > 0,
       patterns: detectedPatterns
+    };
+  }
+
+  /**
+   * Check for data exfiltration attempts
+   */
+  private async checkDataExfiltration(content: string): Promise<{
+    detected: boolean;
+    patterns: string[];
+  }> {
+    const detectedPatterns: string[] = [];
+
+    for (const pattern of SecurityPatterns.DATA_EXFILTRATION) {
+      if (pattern.test(content)) {
+        detectedPatterns.push('data_exfiltration_attempt');
+        break; // One match is enough
+      }
+    }
+
+    return {
+      detected: detectedPatterns.length > 0,
+      patterns: detectedPatterns
+    };
+  }
+
+  /**
+   * Check for political disinformation
+   */
+  private async checkPoliticalDisinfo(content: string): Promise<{
+    detected: boolean;
+    type: string;
+  }> {
+    for (const pattern of SecurityPatterns.POLITICAL_DISINFO) {
+      if (pattern.test(content)) {
+        return {
+          detected: true,
+          type: 'political_disinformation'
+        };
+      }
+    }
+
+    return {
+      detected: false,
+      type: ''
+    };
+  }
+
+  /**
+   * Check for code injection attempts
+   */
+  private async checkCodeInjection(content: string): Promise<{
+    detected: boolean;
+    type: string;
+  }> {
+    for (const pattern of SecurityPatterns.CODE_INJECTION) {
+      if (pattern.test(content)) {
+        return {
+          detected: true,
+          type: 'code_injection'
+        };
+      }
+    }
+
+    return {
+      detected: false,
+      type: ''
     };
   }
 
@@ -358,8 +498,20 @@ export class RegionalGuardrails {
     if (violations.includes('RELIGIOUS_INSULT')) {
       reasons.push('Religious insult or disrespect detected');
     }
+    if (violations.includes('RELIGIOUS_FABRICATION')) {
+      reasons.push('Attempt to fabricate religious content detected');
+    }
     if (violations.includes('ARABIC_TOXICITY')) {
       reasons.push('Toxic or harmful Arabic content detected');
+    }
+    if (violations.includes('DATA_EXFILTRATION')) {
+      reasons.push('Data exfiltration attempt detected');
+    }
+    if (violations.includes('POLITICAL_DISINFORMATION')) {
+      reasons.push('Political disinformation detected');
+    }
+    if (violations.includes('CODE_INJECTION')) {
+      reasons.push('Code injection attempt detected');
     }
     if (violations.includes('HATE_SPEECH')) {
       reasons.push('Hate speech detected');
