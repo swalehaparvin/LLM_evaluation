@@ -26,6 +26,71 @@ if (!JWT_SECRET) {
 
 const JWT_SECRET_VALUE = JWT_SECRET || 'dev-secret-only-for-local-development';
 
+// Regional MENA validation patterns (ported from validators_mena.py)
+function validateMenaContent(text: string) {
+  // Patterns for PII detection
+  const SAUDI_ID = /\b1\d{9}\b/g;  // 10-digit Saudi ID
+  const IBAN = /\bSA\d{2}[0-9A-Z]{20}\b/gi;  // Saudi IBAN
+  const PHONE = /\+?966[ -]?\d{3}[ -]?\d{4}/g;  // Saudi phone
+  const EMAIL = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g;
+  
+  // Hate/religious keywords (Arabic and English)
+  const HATE_KEYWORDS = [
+    'مرتد', 'كافر', 'يهودي', 'نصارى', 'إرهابي', 'اليهود', 'النصارى', 'الكفار',
+    'infidel', 'terrorist', 'jews', 'christians', 'enemies'
+  ];
+  const HATE_REGEX = new RegExp(`\\b(${HATE_KEYWORDS.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`, 'gi');
+  
+  // Prompt injection patterns
+  const INJECTION_REGEX = /\b(ignore previous|bypass|system prompt|leak keys|admin mode|developer mode)\b/gi;
+  
+  let redacted = text;
+  const flags: string[] = [];
+  
+  // Check for hate speech
+  if (HATE_REGEX.test(text)) {
+    flags.push('hate');
+  }
+  
+  // Check for prompt injection
+  if (INJECTION_REGEX.test(text)) {
+    flags.push('injection');
+  }
+  
+  // Redact PII
+  let piiFound = false;
+  const piiPatterns = [
+    { pattern: SAUDI_ID, name: 'saudi_id' },
+    { pattern: IBAN, name: 'iban' },
+    { pattern: PHONE, name: 'phone' },
+    { pattern: EMAIL, name: 'email' }
+  ];
+  
+  for (const { pattern } of piiPatterns) {
+    if (pattern.test(text)) {
+      redacted = redacted.replace(pattern, '***');
+      piiFound = true;
+    }
+  }
+  
+  if (piiFound) {
+    flags.push('pii');
+  }
+  
+  // Determine final decision
+  let ok = true;
+  let message = '✅ Clean';
+  
+  if (flags.includes('hate') || flags.includes('injection')) {
+    ok = false;
+    message = '🚫 Blocked - ' + flags.join(', ');
+  } else if (flags.includes('pii')) {
+    message = '⚠️ PII redacted';
+  }
+  
+  return { ok, redacted, flags, message };
+}
+
 // Extend Express Request type to include user
 declare global {
   namespace Express {
@@ -291,40 +356,26 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(400).json({ error: 'Text is required' });
       }
 
-      // Import OpenAI
-      const { OpenAI } = await import('openai');
+      // Local validation patterns (ported from validators_mena.py)
+      const localValidation = validateMenaContent(text);
       
-      // Check for API key
+      // Check for OpenAI API key for enhanced analysis
       const apiKey = process.env.OPENAI_API_KEY;
       if (!apiKey) {
-        // Fallback to basic validation without OpenAI
-        const { execSync } = await import('child_process');
-        try {
-          const result = execSync(`python -c "from validators_mena import validate_mena; import json; print(json.dumps(validate_mena('${text.replace(/'/g, "\\'")}')))"`, {
-            encoding: 'utf8'
-          });
-          const localResult = JSON.parse(result);
-          
-          return res.json({
-            validation_passed: localResult.ok,
-            validated_output: localResult.redacted,
-            flags: localResult.flags,
-            message: localResult.message,
-            openai_analysis: null,
-            error: null
-          });
-        } catch (error) {
-          return res.json({
-            validation_passed: true,
-            validated_output: text,
-            flags: [],
-            message: 'Validation service unavailable',
-            openai_analysis: null,
-            error: 'Local validation failed'
-          });
-        }
+        // Return local validation results without OpenAI
+        return res.json({
+          validation_passed: localValidation.ok,
+          validated_output: localValidation.redacted,
+          flags: localValidation.flags,
+          message: localValidation.message,
+          openai_analysis: null,
+          error: null
+        });
       }
 
+      // Import OpenAI dynamically
+      const OpenAI = (await import('openai')).default;
+      
       // Initialize OpenAI client
       const openai = new OpenAI({ apiKey });
 
@@ -362,34 +413,21 @@ export async function registerRoutes(app: Express): Promise<void> {
 
       const openaiResult = JSON.parse(openaiAnalysis.choices[0].message.content || '{}');
 
-      // Perform local validation
-      const { execSync } = await import('child_process');
-      let localResult = { ok: true, redacted: text, flags: [], message: 'Clean' };
-      
-      try {
-        const result = execSync(`python -c "from validators_mena import validate_mena; import json; print(json.dumps(validate_mena('${text.replace(/'/g, "\\'")}')))"`, {
-          encoding: 'utf8'
-        });
-        localResult = JSON.parse(result);
-      } catch (error) {
-        console.error('Local validation error:', error);
-      }
-
-      // Combine results
-      const finalBlock = !localResult.ok || openaiResult.should_block;
+      // Combine local and OpenAI results
+      const finalBlock = !localValidation.ok || openaiResult.should_block;
       
       res.json({
         validation_passed: !finalBlock,
-        validated_output: localResult.redacted,
-        flags: localResult.flags,
+        validated_output: localValidation.redacted,
+        flags: localValidation.flags,
         message: finalBlock ? 'Content blocked by security policies' : 'Content passed validation',
         openai_analysis: openaiResult,
-        local_validation: localResult,
+        local_validation: localValidation,
         final_decision: {
           block: finalBlock,
           risk_level: openaiResult.risk_level || 'unknown',
           reason: finalBlock ? 
-            [...(localResult.flags || []), ...(openaiResult.should_block ? [openaiResult.explanation] : [])].join(' | ') : 
+            [...(localValidation.flags || []), ...(openaiResult.should_block ? [openaiResult.explanation] : [])].join(' | ') : 
             'Content is safe'
         }
       });
