@@ -3,8 +3,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer } from "ws";
 import { storage } from "./storage";
-// Temporarily comment out to isolate server issues
-// import { evaluationEngine } from "./services/evaluation-engine";
+import { evaluationEngine } from "./services/evaluation-engine";
 import { insertEvaluationSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import * as fs from "fs";
@@ -478,6 +477,34 @@ print(json.dumps(result))
         error: 'Validation failed',
         validation_passed: false,
         message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Run evaluation endpoint - uses the real evaluation engine
+  app.post('/api/evaluations/run', authenticateToken, async (req, res) => {
+    try {
+      const { modelId, testSuiteIds, options } = runEvaluationSchema.parse(req.body);
+      const userId = req.user!.id;
+      
+      // Run the evaluation using the evaluation engine
+      const evaluationId = await evaluationEngine.runEvaluation(
+        modelId,
+        testSuiteIds,
+        options,
+        userId  // Pass userId to the evaluation engine
+      );
+      
+      res.json({ 
+        success: true, 
+        evaluationId,
+        message: 'Evaluation started successfully'
+      });
+    } catch (error) {
+      console.error('Failed to run evaluation:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Failed to run evaluation',
+        message: 'Evaluation failed. Please check your API keys and try again.' 
       });
     }
   });
