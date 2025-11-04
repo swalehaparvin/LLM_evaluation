@@ -103,7 +103,10 @@ export class MemStorage implements IStorage {
       { modelId: "claude-sonnet-4-20250514", provider: "anthropic", name: "Claude Sonnet 4", description: "Latest Anthropic model" },
       { modelId: "claude-3-haiku-20240307", provider: "anthropic", name: "Claude 3 Haiku", description: "Anthropic Claude 3 Haiku" },
       { modelId: "deepseek-chat", provider: "deepseek", name: "DeepSeek Chat", description: "DeepSeek Chat model - optimized for dialogue" },
-      { modelId: "deepseek-coder", provider: "deepseek", name: "DeepSeek Coder", description: "DeepSeek Coder model - specialized for code generation" }
+      { modelId: "deepseek-coder", provider: "deepseek", name: "DeepSeek Coder", description: "DeepSeek Coder model - specialized for code generation" },
+      { modelId: "command-r-plus", provider: "cohere", name: "Command R+", description: "Cohere's flagship model for complex RAG workflows and multi-step tool use" },
+      { modelId: "command-r", provider: "cohere", name: "Command R", description: "Cohere's performant model optimized for large scale production workloads" },
+      { modelId: "command-light", provider: "cohere", name: "Command Light", description: "Cohere's lightweight model for fast responses" }
     ];
 
     defaultModels.forEach(model => {
