@@ -9,10 +9,8 @@ import { desc } from "drizzle-orm";
 export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: { email: string; username?: string | null; passwordHash: string }): Promise<User>;
-  verifyUserPassword(email: string, password: string): Promise<User | null>;
+  createUser(user: InsertUser): Promise<User>;
 
   // LLM Model operations
   getAllModels(): Promise<LlmModel[]>;
@@ -32,12 +30,10 @@ export interface IStorage {
   createTestCase(testCase: InsertTestCase): Promise<TestCase>;
 
   // Evaluation operations
-  createEvaluation(evaluation: InsertEvaluation & { userId?: number }): Promise<Evaluation>;
+  createEvaluation(evaluation: InsertEvaluation): Promise<Evaluation>;
   getEvaluationById(id: number): Promise<Evaluation | undefined>;
   getEvaluationsByModelId(modelId: string): Promise<Evaluation[]>;
-  getEvaluationsByUserId(userId: number): Promise<Evaluation[]>;
   getRecentEvaluations(limit?: number): Promise<Evaluation[]>;
-  getRecentEvaluationsByUserId(userId: number, limit?: number): Promise<Evaluation[]>;
   updateEvaluationStatus(id: number, status: string, completedAt?: Date): Promise<void>;
   updateEvaluationScore(id: number, overallScore: number): Promise<void>;
 
@@ -49,11 +45,9 @@ export interface IStorage {
   
   // Pagination operations
   getTotalEvaluationResultsCount(): Promise<number>;
-  getTotalEvaluationResultsCountByUserId(userId: number): Promise<number>;
   getEvaluationResultsPaginated(params: {
     offset: number;
     limit: number;
-    userId?: number;
     model?: string;
     testType?: string;
     status?: string;
@@ -101,12 +95,7 @@ export class MemStorage implements IStorage {
       { modelId: "gpt-4o", provider: "openai", name: "GPT-4o", description: "Latest OpenAI model" },
       { modelId: "gpt-3.5-turbo", provider: "openai", name: "GPT-3.5 Turbo", description: "OpenAI GPT-3.5 Turbo" },
       { modelId: "claude-sonnet-4-20250514", provider: "anthropic", name: "Claude Sonnet 4", description: "Latest Anthropic model" },
-      { modelId: "claude-3-haiku-20240307", provider: "anthropic", name: "Claude 3 Haiku", description: "Anthropic Claude 3 Haiku" },
-      { modelId: "deepseek-chat", provider: "deepseek", name: "DeepSeek Chat", description: "DeepSeek Chat model - optimized for dialogue" },
-      { modelId: "deepseek-coder", provider: "deepseek", name: "DeepSeek Coder", description: "DeepSeek Coder model - specialized for code generation" },
-      { modelId: "command-r-plus", provider: "cohere", name: "Command R+", description: "Cohere's flagship model for complex RAG workflows and multi-step tool use" },
-      { modelId: "command-r", provider: "cohere", name: "Command R", description: "Cohere's performant model optimized for large scale production workloads" },
-      { modelId: "command-light", provider: "cohere", name: "Command Light", description: "Cohere's lightweight model for fast responses" }
+      { modelId: "claude-3-haiku-20240307", provider: "anthropic", name: "Claude 3 Haiku", description: "Anthropic Claude 3 Haiku" }
     ];
 
     defaultModels.forEach(model => {
@@ -188,36 +177,15 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.email === email);
-  }
-
   async getUserByUsername(username: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(user => user.username === username);
   }
 
-  async createUser(userData: { email: string; username?: string | null; passwordHash: string }): Promise<User> {
+  async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { 
-      id,
-      email: userData.email,
-      username: userData.username || null,
-      passwordHash: userData.passwordHash,
-      createdAt: new Date(),
-      lastLogin: null
-    };
+    const user: User = { ...insertUser, id };
     this.users.set(id, user);
     return user;
-  }
-
-  async verifyUserPassword(email: string, password: string): Promise<User | null> {
-    const user = await this.getUserByEmail(email);
-    if (!user) return null;
-    // In production, use bcrypt.compare here
-    // For MemStorage, we'll do a simple comparison for now
-    const bcrypt = await import('bcryptjs');
-    const isValid = await bcrypt.compare(password, user.passwordHash);
-    return isValid ? user : null;
   }
 
   // LLM Model operations
@@ -307,11 +275,10 @@ export class MemStorage implements IStorage {
   }
 
   // Evaluation operations
-  async createEvaluation(insertEvaluation: InsertEvaluation & { userId?: number }): Promise<Evaluation> {
+  async createEvaluation(insertEvaluation: InsertEvaluation): Promise<Evaluation> {
     const id = this.currentEvaluationId++;
     const evaluation: Evaluation = {
       id,
-      userId: insertEvaluation.userId ?? null,
       status: insertEvaluation.status,
       modelId: insertEvaluation.modelId,
       testSuiteId: insertEvaluation.testSuiteId ?? null,
@@ -330,19 +297,6 @@ export class MemStorage implements IStorage {
 
   async getEvaluationsByModelId(modelId: string): Promise<Evaluation[]> {
     return Array.from(this.evaluations.values()).filter(evaluation => evaluation.modelId === modelId);
-  }
-
-  async getEvaluationsByUserId(userId: number): Promise<Evaluation[]> {
-    return Array.from(this.evaluations.values())
-      .filter(evaluation => evaluation.userId === userId)
-      .sort((a, b) => b.startedAt!.getTime() - a.startedAt!.getTime());
-  }
-
-  async getRecentEvaluationsByUserId(userId: number, limit: number = 10): Promise<Evaluation[]> {
-    return Array.from(this.evaluations.values())
-      .filter(evaluation => evaluation.userId === userId)
-      .sort((a, b) => b.startedAt!.getTime() - a.startedAt!.getTime())
-      .slice(0, limit);
   }
 
   async getRecentEvaluations(limit: number = 100): Promise<Evaluation[]> {
@@ -433,38 +387,18 @@ export class MemStorage implements IStorage {
     return this.evaluationResults.size;
   }
 
-  async getTotalEvaluationResultsCountByUserId(userId: number): Promise<number> {
-    const userEvaluations = Array.from(this.evaluations.values())
-      .filter(e => e.userId === userId)
-      .map(e => e.id);
-    
-    return Array.from(this.evaluationResults.values())
-      .filter(r => userEvaluations.includes(r.evaluationId))
-      .length;
-  }
-
   async getEvaluationResultsPaginated(params: {
     offset: number;
     limit: number;
-    userId?: number;
     model?: string;
     testType?: string;
     status?: string;
     sortBy?: string;
     sortOrder?: string;
   }): Promise<any[]> {
-    const { offset, limit, userId, model, testType, status } = params;
+    const { offset, limit, model, testType, status } = params;
     
-    // Filter by userId if provided
-    let evaluationIds: number[] | undefined;
-    if (userId) {
-      evaluationIds = Array.from(this.evaluations.values())
-        .filter(e => e.userId === userId)
-        .map(e => e.id);
-    }
-    
-    let results = Array.from(this.evaluationResults.values())
-      .filter(r => !evaluationIds || evaluationIds.includes(r.evaluationId));
+    let results = Array.from(this.evaluationResults.values());
     
     // Apply filters
     if (model) {
@@ -667,26 +601,16 @@ export class DatabaseStorage implements IStorage {
     return result.count;
   }
 
-  async getTotalEvaluationResultsCountByUserId(userId: number): Promise<number> {
-    const [result] = await db
-      .select({ count: count() })
-      .from(evaluationResults)
-      .leftJoin(evaluations, eq(evaluationResults.evaluationId, evaluations.id))
-      .where(eq(evaluations.userId, userId));
-    return result.count;
-  }
-
   async getEvaluationResultsPaginated(params: {
     offset: number;
     limit: number;
-    userId?: number;
     model?: string;
     testType?: string;
     status?: string;
     sortBy?: string;
     sortOrder?: string;
   }): Promise<any[]> {
-    const { offset, limit, userId, model, testType, status, sortBy = 'createdAt', sortOrder = 'desc' } = params;
+    const { offset, limit, model, testType, status, sortBy = 'createdAt', sortOrder = 'desc' } = params;
     
     let query = db
       .select({
@@ -714,9 +638,6 @@ export class DatabaseStorage implements IStorage {
 
     // Apply filters
     const conditions = [];
-    if (userId) {
-      conditions.push(eq(evaluations.userId, userId));
-    }
     if (model) {
       conditions.push(eq(evaluations.modelId, model));
     }

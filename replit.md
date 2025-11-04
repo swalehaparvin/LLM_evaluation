@@ -22,12 +22,9 @@ Preferred communication style: Simple, everyday language.
 - **WebSocket**: Real-time communication for evaluation progress tracking
 
 ### Database Design
-- **Entities**: Users (with email-based authentication), LLM Models, Test Suites, Test Cases, Evaluations (user-linked), Evaluation Results.
-- **Authentication**: Email/password with bcrypt hashing, JWT tokens in HttpOnly cookies.
-- **User Tracking**: All evaluations are associated with authenticated users by email.
+- **Entities**: Users, LLM Models, Test Suites, Test Cases, Evaluations, Evaluation Results.
 
 ### Key Components
-- **Authentication System**: Email-based registration/login with JWT tokens, bcrypt password hashing, and secure cookie management.
 - **Model Management System**: Supports multi-provider LLM integration (OpenAI GPT-4o, Anthropic Claude, Google Gemini) with configurable parameters and long-term memory integration.
 - **Test Suite Framework**: Includes comprehensive tests for Prompt Injection (standard and multilingual), Jailbreaking, Code Interpreter abuse, Data Extraction, MITRE ATT&CK Framework, Memory Corruption & Exploitation, Spear Phishing & Social Engineering, and Code Interpreter Exploitation.
 - **Evaluation Engine**: Provides asynchronous evaluation processing with real-time WebSocket updates, configurable test parameters, and batch evaluation capabilities.
@@ -35,7 +32,7 @@ Preferred communication style: Simple, everyday language.
 - **Dashboard and Visualization**: Offers real-time security metrics, interactive progress tracking, and a professional cybersecurity-themed UI with filtering capabilities.
 
 ### Data Flow
-Authenticated user logs in via email, initiates evaluation (linked to their userId), engine processes tests with LLM, WebSockets provide live updates, evaluators analyze responses, results are persisted to PostgreSQL with user association, and the dashboard visualizes user-specific metrics.
+User initiates evaluation, engine processes tests with LLM, WebSockets provide live updates, evaluators analyze responses, results are persisted to PostgreSQL, and the dashboard visualizes metrics.
 
 ### Deployment Strategy
 - **Primary Runtime**: Node.js 20 with Express server.
@@ -49,7 +46,6 @@ Authenticated user logs in via email, initiates evaluation (linked to their user
 - **OpenAI**: GPT models
 - **Anthropic**: Claude models
 - **Google**: Gemini models
-- **DeepSeek**: DeepSeek Chat and DeepSeek Coder models (OpenAI-compatible API)
 
 ### Database
 - **PostgreSQL**: Primary data storage via Neon serverless

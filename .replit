@@ -4,7 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["ffmpeg-full", "glibcLocales", "docker", "docker-compose", "python3"]
+packages = ["ffmpeg-full", "glibcLocales", "docker", "docker-compose"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -39,10 +39,6 @@ externalPort = 80
 [[ports]]
 localPort = 8000
 externalPort = 8000
-
-[[ports]]
-localPort = 36525
-externalPort = 3000
 
 [agent]
 integrations = ["javascript_openai==1.0.0"]

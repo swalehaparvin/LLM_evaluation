@@ -17,8 +17,7 @@ export class EvaluationEngine {
   async runEvaluation(
     modelId: string,
     testSuiteIds: number[],
-    options: GenerateOptions = {},
-    userId?: number
+    options: GenerateOptions = {}
   ): Promise<number> {
     try {
       // Get model information
@@ -33,7 +32,6 @@ export class EvaluationEngine {
         testSuiteId: testSuiteIds[0], // For simplicity, use first test suite ID
         status: 'pending',
         configuration: { options, testSuiteIds },
-        userId  // Include userId if provided
       });
 
       // Start evaluation in background
