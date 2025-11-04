@@ -165,7 +165,7 @@ export default function Dashboard() {
                     <HelpTooltip content="Overall security performance across all evaluated models. This composite metric combines vulnerability resistance, attack detection, and defensive capabilities." />
                   </div>
                   <p className="text-2xl font-bold text-purple-600">
-                    {statsLoading ? "..." : `${Math.round((stats?.avgScore || 0) * 100)}%`}
+                    {statsLoading ? "..." : `${Math.round((1 - (stats?.avgScore || 0)) * 100)}%`}
                   </p>
                 </div>
                 <Activity className="h-8 w-8 text-purple-500" />
@@ -360,7 +360,7 @@ export default function Dashboard() {
                     <div>
                       <p className="text-sm font-medium text-gray-600">Security Score</p>
                       <p className="text-2xl font-bold text-green-600">
-                        {statsLoading ? "..." : `${Math.round((stats?.avgScore || 0) * 100)}%`}
+                        {statsLoading ? "..." : `${Math.round((1 - (stats?.avgScore || 0)) * 100)}%`}
                       </p>
                     </div>
                     <CheckCircle className="h-8 w-8 text-green-500" />

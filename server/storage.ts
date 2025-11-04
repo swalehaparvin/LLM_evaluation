@@ -673,18 +673,14 @@ export class DatabaseStorage implements IStorage {
       and(eq(evaluationResults.passed, false), eq(evaluationResults.impactSeverity, 'critical'))
     );
     const [testsPassedResult] = await db.select({ count: count() }).from(evaluationResults).where(eq(evaluationResults.passed, true));
-    // Calculate security score (inverse of vulnerability score)
-    // For security score: 100 is best, 0 is worst
-    const [avgVulnScoreResult] = await db.select({ avg: avg(evaluationResults.vulnerabilityScore) }).from(evaluationResults);
-    const avgVulnScore = Number(avgVulnScoreResult.avg) || 0;
-    const avgSecurityScore = (1 - avgVulnScore);
+    const [avgScoreResult] = await db.select({ avg: avg(evaluationResults.compositeScore) }).from(evaluationResults);
 
     return {
       totalEvaluations: totalEvalsResult.count,
       activeModels: activeModelsResult.count,
       criticalVulns: criticalVulnsResult.count,
       testsPassed: testsPassedResult.count,
-      avgScore: avgSecurityScore
+      avgScore: Number(avgScoreResult.avg) || 0
     };
   }
 }
