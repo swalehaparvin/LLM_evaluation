@@ -228,7 +228,7 @@ export default function RegionalGuardrails() {
                 {validationResult.test_suite ? (
                   <div className="space-y-3">
                     <h3 className="font-semibold text-lg">Test Suite Results</h3>
-                    {validationResult.results.map((test: any, index: number) => (
+                    {validationResult.results.map((test: any) => (
                       <div key={test.id} className="border rounded-lg p-3 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="font-medium">{test.description}</span>
@@ -244,142 +244,45 @@ export default function RegionalGuardrails() {
                         <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
                           {test.text}
                         </p>
-                        {test.result.reasons.length > 0 && (
-                          <div className="text-sm">
-                            <span className="font-medium">Reasons: </span>
-                            {test.result.reasons.join(', ')}
-                          </div>
-                        )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      {validationResult.validation_passed ? (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-500" />
-                      )}
-                      <span className="font-semibold">
-                        {validationResult.validation_passed ? 'Content Validated' : 'Content Blocked'}
-                      </span>
-                    </div>
-                    
-                    {/* OpenAI Analysis Results */}
-                    {validationResult.openai_analysis && (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Shield className="h-5 w-5 text-blue-600" />
-                          <span className="font-semibold text-blue-700 dark:text-blue-300">
-                            OpenAI Security Analysis
-                          </span>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-3 mb-3">
-                          <div>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">Risk Level:</span>
-                            <Badge 
-                              className="ml-2"
-                              variant={
-                                validationResult.openai_analysis.risk_level === 'critical' ? 'destructive' :
-                                validationResult.openai_analysis.risk_level === 'high' ? 'destructive' :
-                                validationResult.openai_analysis.risk_level === 'medium' ? 'secondary' :
-                                'default'
-                              }
-                            >
-                              {validationResult.openai_analysis.risk_level?.toUpperCase() || 'UNKNOWN'}
-                            </Badge>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">Confidence:</span>
-                            <span className="ml-2 font-medium">
-                              {((validationResult.openai_analysis.confidence || 0) * 100).toFixed(0)}%
-                            </span>
-                          </div>
-                        </div>
-                        
-                        {validationResult.openai_analysis.categories?.length > 0 && (
-                          <div className="mb-3">
-                            <span className="text-sm text-gray-600 dark:text-gray-400">Detected Issues:</span>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {validationResult.openai_analysis.categories.map((category: string, idx: number) => (
-                                <Badge key={idx} variant="outline" className="text-xs">
-                                  {category}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
+                  <div className="space-y-4">
+                    {/* Status Display */}
+                    <div className={`rounded-lg p-4 ${
+                      validationResult.status === 'ALLOW' 
+                        ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
+                        : validationResult.status === 'REDACTED'
+                        ? 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800'
+                        : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                    }`}>
+                      <div className="flex items-center gap-3 mb-3">
+                        {validationResult.status === 'ALLOW' ? (
+                          <CheckCircle className="h-6 w-6 text-green-500" />
+                        ) : validationResult.status === 'REDACTED' ? (
+                          <AlertTriangle className="h-6 w-6 text-yellow-500" />
+                        ) : (
+                          <XCircle className="h-6 w-6 text-red-500" />
                         )}
-                        
-                        {validationResult.openai_analysis.explanation && (
-                          <div className="text-sm text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded p-2">
-                            {validationResult.openai_analysis.explanation}
+                        <div>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
+                          <div className="font-bold text-lg">
+                            {validationResult.status || (validationResult.validation_passed ? 'ALLOW' : 'BLOCK')}
                           </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    {/* Local Validation Results */}
-                    {validationResult.flags && validationResult.flags.length > 0 && (
-                      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                          <span className="font-medium text-yellow-700 dark:text-yellow-400">
-                            Local Security Flags
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {validationResult.flags.map((flag: string, idx: number) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">
-                              {flag}
-                            </Badge>
-                          ))}
                         </div>
                       </div>
-                    )}
-                    
-                    {validationResult.error && (
-                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="h-4 w-4 text-red-500" />
-                          <span className="font-medium text-red-700 dark:text-red-400">
-                            Security Policy Violation
-                          </span>
-                        </div>
-                        <p className="text-red-600 dark:text-red-300 mt-1">
-                          {validationResult.error}
-                        </p>
-                      </div>
-                    )}
-
-                    {validationResult.validated_output && (
-                      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                        <h4 className="font-medium mb-2">Processed Output:</h4>
-                        <p className="text-sm">{validationResult.validated_output}</p>
-                      </div>
-                    )}
-                    
-                    {/* Final Decision Summary */}
-                    {validationResult.final_decision && (
-                      <div className={`rounded-lg p-3 ${
-                        validationResult.final_decision.block 
-                          ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' 
-                          : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-                      }`}>
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">Final Decision:</span>
-                          <Badge variant={validationResult.final_decision.block ? "destructive" : "default"}>
-                            {validationResult.final_decision.block ? 'BLOCKED' : 'ALLOWED'}
-                          </Badge>
-                        </div>
-                        {validationResult.final_decision.reason && (
-                          <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
-                            {validationResult.final_decision.reason}
+                      
+                      {/* Summary Display */}
+                      {validationResult.securityValidationSummary?.summary && (
+                        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Summary</span>
+                          <p className="text-gray-800 dark:text-gray-200 mt-1">
+                            {validationResult.securityValidationSummary.summary}
                           </p>
-                        )}
-                      </div>
-                    )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
