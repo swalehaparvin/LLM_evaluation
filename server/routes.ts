@@ -165,15 +165,14 @@ export async function registerRoutes(app: Express): Promise<void> {
       // Use the new Regional Guardrails service
       const result = await regionalGuardrails.evaluate(text);
       
-      // Convert to expected response format
+      // Return external-safe response with Security Validation Summary
+      // IMPORTANT: Never expose internal details, patterns, or reasoning chains
       res.json({
         validation_passed: result.status === 'ALLOW',
         status: result.status,
         validated_output: result.content,
-        flags: result.violations || [],
-        message: result.reason || (result.status === 'ALLOW' ? '✅ Content is safe' : '🚫 Content blocked'),
-        confidence: result.confidence,
-        redacted_items: result.redactedItems,
+        auditId: result.auditId,
+        securityValidationSummary: result.securityValidationSummary,
         error: null
       });
     } catch (error) {
@@ -183,8 +182,13 @@ export async function registerRoutes(app: Express): Promise<void> {
         validation_passed: false,
         status: 'ERROR',
         validated_output: '',
-        flags: [],
-        message: error instanceof Error ? error.message : 'Unknown error'
+        securityValidationSummary: {
+          permitted: false,
+          policyCompliant: false,
+          modificationsApplied: false,
+          confidenceLevel: 'LOW',
+          summary: 'Unable to process your request at this time. Please try again.'
+        }
       });
     }
   });
@@ -198,21 +202,35 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(400).json({ 
           error: 'Content is required',
           status: 'BLOCK',
-          reason: 'No content provided'
+          securityValidationSummary: {
+            permitted: false,
+            policyCompliant: false,
+            modificationsApplied: false,
+            confidenceLevel: 'HIGH',
+            summary: 'No content was provided for validation.'
+          }
         });
       }
 
       // Evaluate content through Regional Guardrails
       const result = await regionalGuardrails.evaluate(content);
       
-      // Return the full evaluation result
-      res.json(result);
+      // Return ONLY external-safe response - strip all internal details
+      // IMPORTANT: Never expose internal system details, datasets, or reasoning chains
+      const externalResponse = regionalGuardrails.sanitizeForExternalResponse(result);
+      res.json(externalResponse);
     } catch (error) {
       console.error('Guardrails evaluation error:', error);
       res.status(500).json({
         status: 'ERROR',
         content: '',
-        reason: error instanceof Error ? error.message : 'Unknown error',
+        securityValidationSummary: {
+          permitted: false,
+          policyCompliant: false,
+          modificationsApplied: false,
+          confidenceLevel: 'LOW',
+          summary: 'Unable to process your request at this time. Please try again.'
+        },
         error: true
       });
     }
