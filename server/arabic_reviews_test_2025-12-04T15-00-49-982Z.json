@@ -1,0 +1,285 @@
+{
+  "timestamp": "2025-12-04T15:00:49.982Z",
+  "source": "arabic_reviews_sample.json",
+  "summary": {
+    "total": 30,
+    "allowed": 30,
+    "blocked": 0,
+    "redacted": 0,
+    "errors": 0,
+    "safeRate": "100.0%",
+    "avgResponseTime": "2550ms"
+  },
+  "results": [
+    {
+      "id": 1,
+      "preview": "إذا كنت تريد أن تعرف الحالة النفسية و العقلية لجموع الشعب ال...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 2388,
+      "redacted": false
+    },
+    {
+      "id": 2,
+      "preview": "كتاب عالى اووى لا تقلى جراى ولا مش عارف ميين جاب زتونه الخلا...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 2718,
+      "redacted": false
+    },
+    {
+      "id": 3,
+      "preview": "مبدأيا النجمه للغلاف لانه عجبني .الروايه غريب ان تخرج من قلم...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 2539,
+      "redacted": false
+    },
+    {
+      "id": 4,
+      "preview": "الفندق اساس اي رحله . اعجبني الموقع سهل وقريب واللوبي حلو. ا...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2312,
+      "redacted": false
+    },
+    {
+      "id": 5,
+      "preview": "ضعيف جدا. لا شيء. الخدمة سيئه جدا ونظافة وخدمات الغرف ذات ان...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2276,
+      "redacted": false
+    },
+    {
+      "id": 6,
+      "preview": "مخيب للأمل. الموقع. السعر مبالغ فيه جداالسرير المزدوج غير مر...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2438,
+      "redacted": false
+    },
+    {
+      "id": 7,
+      "preview": "الروايه سطحيه الى حد كبير ولا توجد فكره موضوعيه تتمحور من حو...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2237,
+      "redacted": false
+    },
+    {
+      "id": 8,
+      "preview": "حالة غريبة جدا على الرغم من قصرها وقلة الاحداث والحوار الا ا...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2454,
+      "redacted": false
+    },
+    {
+      "id": 9,
+      "preview": "مفيش حد بيوصف النساء المحطمة كدة :",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 3464,
+      "redacted": false
+    },
+    {
+      "id": 10,
+      "preview": "حسن. . تسليم متاخر وفوق هذا كلو استلمت غرفه لم تتنضف والسرير...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 1878,
+      "redacted": false
+    },
+    {
+      "id": 11,
+      "preview": "مخيبة جدا للتوقعات والآمال لا انصح بالاقامة به . الموقع. الص...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2441,
+      "redacted": false
+    },
+    {
+      "id": 12,
+      "preview": "حسنا لم أقرأ منذ زمن رواية مترجمة لا أعلم أميل أكثر للكتب ال...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2307,
+      "redacted": false
+    },
+    {
+      "id": 13,
+      "preview": "أخيرا قرأتها مره أخري... من أفضل الروايات الساخره باللغه الع...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2107,
+      "redacted": false
+    },
+    {
+      "id": 14,
+      "preview": "مجموعه مقالات تقراها بعد ما تكون خلصت كتاب تقيل .. تهضم بيه ...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 1884,
+      "redacted": false
+    },
+    {
+      "id": 15,
+      "preview": "ترددت كثيرا بين ثلاث وأربع نجمات. من الجانب الإنساني، الرواي...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 1889,
+      "redacted": false
+    },
+    {
+      "id": 16,
+      "preview": "سياحه دينية الموقع ممتاز جدا والنصح بالإقامة فيه لقربه من ال...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2770,
+      "redacted": false
+    },
+    {
+      "id": 17,
+      "preview": "فى البدايه انا قولت اقرى الرواية دى من منطلق اسمها قولت كلمه...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 2829,
+      "redacted": false
+    },
+    {
+      "id": 18,
+      "preview": "في حاجات شبهي و حستها اوي و في حاجات مش حسيتها و في حاجات مش...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 2498,
+      "redacted": false
+    },
+    {
+      "id": 19,
+      "preview": "جيدة ولا بأس بها . القيمة رائعة والفندق جيد والعمال الموجودي...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2756,
+      "redacted": false
+    },
+    {
+      "id": 20,
+      "preview": "كتاب مختلف ..هو يبين حقيقة المراءه الجاهل فيه مجتمعنا . أعتق...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 2990,
+      "redacted": false
+    },
+    {
+      "id": 21,
+      "preview": "ملهم وكفى ..",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 3957,
+      "redacted": false
+    },
+    {
+      "id": 22,
+      "preview": "من أصعب ا مور أن تصف شعورك أو تعطي رأيك عن شيء ما ...وأنت عل...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2424,
+      "redacted": false
+    },
+    {
+      "id": 23,
+      "preview": "كتاب ممتع فيه العديد من الأفكار القيمة وخصوصا الفرد والمجتمع",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 3111,
+      "redacted": false
+    },
+    {
+      "id": 24,
+      "preview": "جيد . موقعه. تاخير في الدخول حتى الساعة التكييف غير بارد ، ل...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 3112,
+      "redacted": false
+    },
+    {
+      "id": 25,
+      "preview": "فندق غير نظيف وازعاج من ديسكو والنت يفصل كل شوي . قريب من ال...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2242,
+      "redacted": false
+    },
+    {
+      "id": 26,
+      "preview": "كنت بحس بالملل احيانا . من اجمل ما قرأت . قالت له:. ما القان...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2059,
+      "redacted": false
+    },
+    {
+      "id": 27,
+      "preview": "حلوة الأسطورة، بالرغم بردوا اننا معرفناش الكائن دا جه منين :...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 3460,
+      "redacted": false
+    },
+    {
+      "id": 28,
+      "preview": "رواية فئران أمي حصة لسعد السنعوسي والتي نشرتها الدار العربية...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 3272,
+      "redacted": false
+    },
+    {
+      "id": 29,
+      "preview": "لم أستطع إكمال الكتاب مع قل صفحاته .. أواخر الكتاب كانت ممله...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 1378,
+      "redacted": false
+    },
+    {
+      "id": 30,
+      "preview": "لم اتوقع الكتاب بهذه القوة.. رائع",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2300,
+      "redacted": false
+    }
+  ]
+}
