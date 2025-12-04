@@ -154,6 +154,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   // Regional GuardRails validation endpoint with OpenAI integration
+  // SECURITY: Returns sanitized response without internal pattern details
   app.post('/api/validate-regional', async (req, res) => {
     try {
       const { text } = req.body;
@@ -162,18 +163,19 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(400).json({ error: 'Text is required' });
       }
 
-      // Use the new Regional Guardrails service
+      // Use the Regional Guardrails service with dual-layer validation
       const result = await regionalGuardrails.evaluate(text);
       
-      // Convert to expected response format
+      // Get sanitized result for external response
+      const sanitized = regionalGuardrails.sanitizeForExternalResponse(result);
+      
+      // Convert to expected response format (without exposing internal violations)
       res.json({
         validation_passed: result.status === 'ALLOW',
-        status: result.status,
-        validated_output: result.content,
-        flags: result.violations || [],
-        message: result.reason || (result.status === 'ALLOW' ? '✅ Content is safe' : '🚫 Content blocked'),
-        confidence: result.confidence,
-        redacted_items: result.redactedItems,
+        status: sanitized.status,
+        validated_output: sanitized.content,
+        auditId: sanitized.auditId,
+        securityValidationSummary: sanitized.securityValidationSummary,
         error: null
       });
     } catch (error) {
@@ -183,13 +185,19 @@ export async function registerRoutes(app: Express): Promise<void> {
         validation_passed: false,
         status: 'ERROR',
         validated_output: '',
-        flags: [],
-        message: error instanceof Error ? error.message : 'Unknown error'
+        securityValidationSummary: {
+          permitted: false,
+          policyCompliant: false,
+          modificationsApplied: false,
+          confidenceLevel: 'LOW',
+          summary: 'Validation service temporarily unavailable.'
+        }
       });
     }
   });
 
   // New comprehensive guardrails endpoint for pre-filtering
+  // SECURITY: Returns sanitized response without internal details
   app.post('/api/guardrails/evaluate', async (req, res) => {
     try {
       const { content, options } = req.body;
@@ -205,15 +213,24 @@ export async function registerRoutes(app: Express): Promise<void> {
       // Evaluate content through Regional Guardrails
       const result = await regionalGuardrails.evaluate(content);
       
-      // Return the full evaluation result
-      res.json(result);
+      // IMPORTANT: Strip internal details before external response
+      // This ensures no system information, patterns, or datasets are exposed
+      const sanitizedResult = regionalGuardrails.sanitizeForExternalResponse(result);
+      
+      // Return the sanitized evaluation result
+      res.json(sanitizedResult);
     } catch (error) {
       console.error('Guardrails evaluation error:', error);
       res.status(500).json({
         status: 'ERROR',
         content: '',
-        reason: error instanceof Error ? error.message : 'Unknown error',
-        error: true
+        securityValidationSummary: {
+          permitted: false,
+          policyCompliant: false,
+          modificationsApplied: false,
+          confidenceLevel: 'LOW',
+          summary: 'Validation service temporarily unavailable.'
+        }
       });
     }
   });
