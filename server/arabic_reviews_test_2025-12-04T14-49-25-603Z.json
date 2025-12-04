@@ -1,0 +1,285 @@
+{
+  "timestamp": "2025-12-04T14:49:25.604Z",
+  "source": "arabic_reviews_sample.json",
+  "summary": {
+    "total": 30,
+    "allowed": 30,
+    "blocked": 0,
+    "redacted": 0,
+    "errors": 0,
+    "safeRate": "100.0%",
+    "avgResponseTime": "3387ms"
+  },
+  "results": [
+    {
+      "id": 1,
+      "preview": "مقدرش أقول إن الكتاب ممتاز ... بس هو كبداية في مصر هنا حلو ج...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.9,
+      "duration": 2222,
+      "redacted": false
+    },
+    {
+      "id": 2,
+      "preview": "اكثر من صفحة من الامتاع والابداع . رواية مذهلة مغلفة ببعض ال...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.9,
+      "duration": 3781,
+      "redacted": false
+    },
+    {
+      "id": 3,
+      "preview": "مقبول. لا شي. مستوي النظافة والاثاث",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 1673,
+      "redacted": false
+    },
+    {
+      "id": 4,
+      "preview": "سيرة ذاتية رائعه",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 1480,
+      "redacted": false
+    },
+    {
+      "id": 5,
+      "preview": "استثنائي. . النت غالي المفروض مجانا",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.9,
+      "duration": 1465,
+      "redacted": false
+    },
+    {
+      "id": 6,
+      "preview": "في مزج رائع بين النص والفوتوغرافيا، بين عبق التاريخ وسحر الج...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2597,
+      "redacted": false
+    },
+    {
+      "id": 7,
+      "preview": "ميليا دبي فندق ذو علامة تجارية جديدة ولطيف للغاية. لا يقع ال...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 4873,
+      "redacted": false
+    },
+    {
+      "id": 8,
+      "preview": "كتاب فلسفي جميل و لزيز . ممكن أختلف مع الكثير من أفكاره لكن ...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 3780,
+      "redacted": false
+    },
+    {
+      "id": 9,
+      "preview": "لم أستطع أن أكملها. الفكرة حلوة بس القفز بين الأحداث و عدم ا...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 2234,
+      "redacted": false
+    },
+    {
+      "id": 10,
+      "preview": "لم يعجبني الجزء الثاني من السلسلة بقدر الجزء الأول",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2132,
+      "redacted": false
+    },
+    {
+      "id": 11,
+      "preview": "كتاب شيق باسلوب مبسط و اعجبنى كثرة الامثلة من الواقع للتوضيح...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2155,
+      "redacted": false
+    },
+    {
+      "id": 12,
+      "preview": "أول تجربة في قراءة الكمكس المصورة. وللمفارقة استفدت واستمتعت...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 4773,
+      "redacted": false
+    },
+    {
+      "id": 13,
+      "preview": "لا . لا شي. موظفين الاستقبال غير منظمين اسلوب التعامل سيئة ي...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 2240,
+      "redacted": false
+    },
+    {
+      "id": 14,
+      "preview": "تجربة ابو سعد . راحة الفراش القرب من الحرم تنوع المطعم . الس...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 3569,
+      "redacted": false
+    },
+    {
+      "id": 15,
+      "preview": "لا اكون صريحة السلعة بها الكثير من الاشياء السيئة",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.9,
+      "duration": 3379,
+      "redacted": false
+    },
+    {
+      "id": 16,
+      "preview": "اجازه العيد . من اجمل الفنادق غرف واسعه و خدمات متميزه و نظا...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 3298,
+      "redacted": false
+    },
+    {
+      "id": 17,
+      "preview": "اول عمل اقرأه لمنيف ورغم بساطته وفكرته الكلاسيكيه الا انني ا...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2173,
+      "redacted": false
+    },
+    {
+      "id": 18,
+      "preview": "حجز عرف بوكنج سيئ . الموقع جيد. ولكن الغرف الخاصة بالموقع سي...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 1915,
+      "redacted": false
+    },
+    {
+      "id": 19,
+      "preview": "مخيب للأمل. المكان جميل جدا الإطلالة رائعة الموقع متميز لقرب...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 3406,
+      "redacted": false
+    },
+    {
+      "id": 20,
+      "preview": "اختلف كثيرا مع فلسفة نيشية وبحث زرادشت عن الانسان المتفوق .....",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 5951,
+      "redacted": false
+    },
+    {
+      "id": 21,
+      "preview": "إنني المشنوق أعلاه. على حبل القوافي. خنت خوفي وارتجافي. وتعر...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.3,
+      "duration": 6442,
+      "redacted": false
+    },
+    {
+      "id": 22,
+      "preview": "استثنائي. الفندق أفضل من المتوقع من الراحة والنظافة والخدمات...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2013,
+      "redacted": false
+    },
+    {
+      "id": 23,
+      "preview": "ممتاز. قريب من الحرم النبوي .. الافطار.",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2340,
+      "redacted": false
+    },
+    {
+      "id": 24,
+      "preview": "رواية اكتر من رائعة ...تناولها مراد بتصوير سينمائي عالي لاحد...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 3870,
+      "redacted": false
+    },
+    {
+      "id": 25,
+      "preview": "من قال أن جلال أمين يكتب فقط للمصريين. جلال أمين كاتب بالنسب...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.3,
+      "duration": 9622,
+      "redacted": false
+    },
+    {
+      "id": 26,
+      "preview": "في الصميم",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.9,
+      "duration": 4526,
+      "redacted": false
+    },
+    {
+      "id": 27,
+      "preview": "كتاب خربوطي. من أوائل الكتب التي قرأتها في مراهقتي عن تحليل ...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 2388,
+      "redacted": false
+    },
+    {
+      "id": 28,
+      "preview": "جميلة، من النوع الذي يجعلك تفتح مباشرة ويكيبيديا لتبحث عن ال...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 1,
+      "duration": 4097,
+      "redacted": false
+    },
+    {
+      "id": 29,
+      "preview": "مرضي. الشقة جديدة. عند تسجيل الدخول انتظرت ساعة وربعمع العلم...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 2581,
+      "redacted": false
+    },
+    {
+      "id": 30,
+      "preview": "هذا الكتاب من الكتب و الشهادات المهمة جدا في تاريخ الحركات ا...",
+      "status": "ALLOW",
+      "violations": [],
+      "confidence": 0.95,
+      "duration": 4636,
+      "redacted": false
+    }
+  ]
+}
