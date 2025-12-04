@@ -28,20 +28,6 @@ const openai = new OpenAI({
 // TYPES AND INTERFACES
 // ============================================================================
 
-/**
- * Security Validation Summary - User-facing explanation of the validation decision
- * IMPORTANT: This summary is designed to be safe for external display.
- * It NEVER reveals internal system details, datasets, patterns, or reasoning chains.
- */
-export interface SecurityValidationSummary {
-  permitted: boolean;
-  policyCompliant: boolean;
-  modificationsApplied: boolean;
-  modifications?: string[];
-  confidenceLevel: 'HIGH' | 'MEDIUM' | 'LOW';
-  summary: string;
-}
-
 export interface GuardRailsResult {
   status: 'ALLOW' | 'BLOCK' | 'REDACTED' | 'FLAG';
   content: string;
@@ -49,12 +35,8 @@ export interface GuardRailsResult {
   violations?: string[];
   redactedItems?: string[];
   confidence?: number;
-  securityValidationSummary: SecurityValidationSummary;
+  validationLayers?: ValidationLayerResult[];
   auditId?: string;
-  // Internal fields - stripped before external response
-  _internal?: {
-    validationLayers?: ValidationLayerResult[];
-  };
 }
 
 interface ValidationLayerResult {
@@ -299,14 +281,7 @@ export class RegionalGuardrails {
         status: 'ALLOW', 
         content: '',
         auditId,
-        confidence: 1.0,
-        securityValidationSummary: {
-          permitted: true,
-          policyCompliant: true,
-          modificationsApplied: false,
-          confidenceLevel: 'HIGH',
-          summary: 'Content validation completed. No content provided.'
-        }
+        confidence: 1.0
       };
     }
 
@@ -370,129 +345,11 @@ export class RegionalGuardrails {
 
     this.auditLogger.log(auditEntry);
 
-    // Generate user-facing Security Validation Summary (no internal details exposed)
-    const securityValidationSummary = this.generateSecurityValidationSummary(
-      combinedResult,
-      secondaryResult.redactedItems
-    );
-
     return {
       ...combinedResult,
       auditId,
-      securityValidationSummary,
-      _internal: {
-        validationLayers: [primaryLayerResult, secondaryLayerResult]
-      }
+      validationLayers: [primaryLayerResult, secondaryLayerResult]
     };
-  }
-
-  /**
-   * Generate a user-facing Security Validation Summary
-   * IMPORTANT: This method NEVER exposes internal system details, datasets, or reasoning chains
-   */
-  private generateSecurityValidationSummary(
-    result: Omit<GuardRailsResult, 'securityValidationSummary' | 'auditId' | '_internal'>,
-    redactedItems?: string[]
-  ): SecurityValidationSummary {
-    const confidence = result.confidence || 0;
-    const confidenceLevel: 'HIGH' | 'MEDIUM' | 'LOW' = 
-      confidence >= 0.85 ? 'HIGH' : confidence >= 0.6 ? 'MEDIUM' : 'LOW';
-
-    // Map violations to user-friendly categories (without revealing detection methods)
-    const getViolationCategory = (violations: string[]): string => {
-      if (!violations || violations.length === 0) return '';
-      
-      const categories: string[] = [];
-      const violationStr = violations.join(' ').toLowerCase();
-      
-      if (violationStr.includes('pii') || violationStr.includes('personal')) {
-        categories.push('personal information protection');
-      }
-      if (violationStr.includes('religious') || violationStr.includes('fabrication')) {
-        categories.push('content authenticity');
-      }
-      if (violationStr.includes('injection') || violationStr.includes('security')) {
-        categories.push('security policy');
-      }
-      if (violationStr.includes('toxic') || violationStr.includes('hate')) {
-        categories.push('community guidelines');
-      }
-      if (violationStr.includes('political') || violationStr.includes('disinfo')) {
-        categories.push('information accuracy');
-      }
-      if (violationStr.includes('exfiltration') || violationStr.includes('data')) {
-        categories.push('data protection');
-      }
-      if (violationStr.includes('code')) {
-        categories.push('code safety');
-      }
-      
-      return categories.length > 0 ? categories.join(', ') : 'regional compliance';
-    };
-
-    switch (result.status) {
-      case 'ALLOW':
-        return {
-          permitted: true,
-          policyCompliant: true,
-          modificationsApplied: false,
-          confidenceLevel,
-          summary: 'Content has been validated and meets all regional compliance requirements.'
-        };
-
-      case 'BLOCK':
-        return {
-          permitted: false,
-          policyCompliant: false,
-          modificationsApplied: false,
-          confidenceLevel,
-          summary: `Content cannot be processed as it does not meet ${getViolationCategory(result.violations || [])} requirements.`
-        };
-
-      case 'REDACTED':
-        const modifications = redactedItems?.map(item => {
-          // Convert internal item names to user-friendly descriptions
-          const itemLower = item.toLowerCase();
-          if (itemLower.includes('id') || itemLower.includes('saudi') || itemLower.includes('emirates')) {
-            return 'identification number';
-          }
-          if (itemLower.includes('phone')) return 'phone number';
-          if (itemLower.includes('email')) return 'email address';
-          if (itemLower.includes('iban')) return 'bank account number';
-          if (itemLower.includes('passport')) return 'passport number';
-          return 'sensitive information';
-        }) || [];
-        
-        // Deduplicate modifications using Array.from
-        const uniqueModifications = Array.from(new Set(modifications));
-        
-        return {
-          permitted: true,
-          policyCompliant: true,
-          modificationsApplied: true,
-          modifications: uniqueModifications,
-          confidenceLevel,
-          summary: 'Content has been processed with personal information protected for your security.'
-        };
-
-      case 'FLAG':
-        return {
-          permitted: true,
-          policyCompliant: true,
-          modificationsApplied: false,
-          confidenceLevel: 'MEDIUM',
-          summary: 'Content has been validated with additional review applied.'
-        };
-
-      default:
-        return {
-          permitted: false,
-          policyCompliant: false,
-          modificationsApplied: false,
-          confidenceLevel: 'LOW',
-          summary: 'Content validation status is pending.'
-        };
-    }
   }
 
   /**
@@ -719,7 +576,7 @@ RESPONSE FORMAT (JSON):
     primary: OpenAISecurityAnalysis,
     secondary: RegionalDatasetResult,
     originalContent: string
-  ): Omit<GuardRailsResult, 'securityValidationSummary' | 'auditId' | '_internal'> {
+  ): GuardRailsResult {
     // Combine violations from both layers (deduplicated)
     const allViolationsArray = Array.from(new Set([
       ...primary.violationTypes,
@@ -939,31 +796,6 @@ RESPONSE FORMAT (JSON):
       ]
     };
   }
-
-  /**
-   * Strip internal details from result before sending to external clients
-   * IMPORTANT: Always use this method before exposing results externally
-   * This ensures no internal system details, datasets, or reasoning chains are revealed
-   */
-  sanitizeForExternalResponse(result: GuardRailsResult): ExternalGuardRailsResult {
-    return {
-      status: result.status,
-      content: result.content,
-      auditId: result.auditId,
-      securityValidationSummary: result.securityValidationSummary
-    };
-  }
-}
-
-/**
- * External-safe result type - contains only information safe for external clients
- * NEVER includes internal details, patterns, datasets, or reasoning chains
- */
-export interface ExternalGuardRailsResult {
-  status: 'ALLOW' | 'BLOCK' | 'REDACTED' | 'FLAG';
-  content: string;
-  auditId?: string;
-  securityValidationSummary: SecurityValidationSummary;
 }
 
 // Export singleton instance
