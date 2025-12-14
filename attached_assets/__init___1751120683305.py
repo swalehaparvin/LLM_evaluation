@@ -1,5 +1,5 @@
 """
-Model initialization and registry module for CyberSecEval Enhanced.
+Model initialization and registry module for Evaluation.
 """
 
 from typing import Dict, Any, Optional
